@@ -1,10 +1,7 @@
 package com.demo.pccm.domain.client.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +14,7 @@ import java.time.LocalDateTime;
 )
 @Getter
 @Entity
+@Data
 public class Client {
 
     @Id
@@ -60,6 +58,15 @@ public class Client {
         this.endYmd = endYmd;
         this.deleteYn = "N";
         this.createdDate = LocalDateTime.now();
+    }
+
+    public void update(String clientName, String phoneNo, String emailAddr, String beginYmd, String endYmd) {
+        this.clientName = clientName;
+        this.phoneNo = phoneNo;
+        this.emailAddr = emailAddr;
+        this.beginYmd = beginYmd;
+        this.endYmd = endYmd;
+        this.modifiedDate = LocalDateTime.now();
     }
 
 }
