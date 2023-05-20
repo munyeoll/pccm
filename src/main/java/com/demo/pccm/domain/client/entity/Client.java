@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
         initialValue = 1,
         allocationSize = 1
 )
-@Getter
 @Entity
 @Data
 public class Client {
@@ -44,6 +43,7 @@ public class Client {
 
     @Column(length = 1)
     private String deleteYn;
+
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
     private LocalDateTime deletedDate;
@@ -67,6 +67,11 @@ public class Client {
         this.beginYmd = beginYmd;
         this.endYmd = endYmd;
         this.modifiedDate = LocalDateTime.now();
+    }
+
+    public void delete() {
+        this.deleteYn = "Y";
+        this.deletedDate = LocalDateTime.now();
     }
 
 }
