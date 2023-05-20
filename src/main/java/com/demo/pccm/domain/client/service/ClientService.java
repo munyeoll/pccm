@@ -22,6 +22,11 @@ public class ClientService {
 
     private final ClientRepository clientRepository;
 
+    /**
+     * 신규 고객정보 생성
+     * @param clientSaveDto
+     * @return Long(New client id)
+     */
     public Long save(ClientSaveDto clientSaveDto) {
         if( checkDuplicateClientNo(clientSaveDto.getClientNo()) ){
             throw new BusinessException(ErrorCode.CONFLICT);
@@ -30,6 +35,12 @@ public class ClientService {
         return client.getId();
     }
 
+    /**
+     * 고객정보 수정
+     * @param id
+     * @param clientUpdateDto
+     * @return Long(Client id)
+     */
     public Long update(Long id, ClientUpdateDto clientUpdateDto) {
         Client client = clientRepository.findById(id).orElseThrow(() ->
                 new BusinessException(ErrorCode.INVALID_PARAMETER));
@@ -43,6 +54,12 @@ public class ClientService {
         return client.getId();
     }
 
+    /**
+     * 고객정보 삭제
+     * delete_yn = "Y" 로 업데이트
+     * @param id
+     * @return Long(Client id)
+     */
     public Long delete(Long id) {
         Client client = clientRepository.findById(id).orElseThrow(() ->
                 new BusinessException(ErrorCode.INVALID_PARAMETER));
@@ -50,17 +67,31 @@ public class ClientService {
         return id;
     }
 
+    /**
+     * 고객정보 조회
+     * @param id
+     * @return ClientDto
+     */
     public ClientDto getClientById(Long id) {
         Client client = clientRepository.findById(id).orElseThrow(() ->
                 new BusinessException(ErrorCode.INVALID_PARAMETER));
         return new ClientDto(client);
     }
 
+    /**
+     * 고객정보 리스트 조회
+     * @return List<ClientDto>
+     */
     public List<ClientDto> getClientList() {
         Optional<Client> clientList = clientRepository.findByDeleteYn("N");
         return clientList.stream().map(client -> new ClientDto(client)).collect(Collectors.toList());
     }
 
+    /**
+     * 고객번호 중복 확인
+     * @param clientNo
+     * @return boolean
+     */
     public boolean checkDuplicateClientNo(String clientNo) {
         return clientRepository.findByClientNo(clientNo).isPresent();
     }
