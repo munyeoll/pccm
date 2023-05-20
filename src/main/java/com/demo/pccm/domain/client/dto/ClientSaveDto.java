@@ -8,9 +8,8 @@ import lombok.ToString;
 @Getter
 @ToString
 @NoArgsConstructor
-public class ClientSaveRequestDto {
+public class ClientSaveDto {
 
-    private Long id;
     private String clientNo;
     private String clientName;
     private String phoneNo;
