@@ -1,6 +1,7 @@
 package com.demo.pccm.domain.client.service;
 
-import com.demo.pccm.domain.client.dto.ClientSaveRequestDto;
+import com.demo.pccm.domain.client.dto.ClientUpdateDto;
+import com.demo.pccm.domain.client.dto.ClientSaveDto;
 import com.demo.pccm.domain.client.entity.Client;
 import com.demo.pccm.domain.client.entity.ClientRepository;
 import com.demo.pccm.global.exception.BusinessException;
@@ -16,11 +17,24 @@ public class ClientService {
 
     private final ClientRepository clientRepository;
 
-    public Long save(ClientSaveRequestDto requestDto) {
-        if( checkDuplicateClientNo(requestDto.getClientNo()) ){
+    public Long save(ClientSaveDto clientSaveDto) {
+        if( checkDuplicateClientNo(clientSaveDto.getClientNo()) ){
             throw new BusinessException(ErrorCode.CONFLICT);
         }
-        Client client = clientRepository.save(requestDto.toEntity());
+        Client client = clientRepository.save(clientSaveDto.toEntity());
+        return client.getId();
+    }
+
+    public Long update(Long id, ClientUpdateDto clientUpdateDto) {
+        Client client = clientRepository.findById(id).orElseThrow(() ->
+                new BusinessException(ErrorCode.INVALID_PARAMETER));
+        client.update(
+                clientUpdateDto.getClientName(),
+                clientUpdateDto.getPhoneNo(),
+                clientUpdateDto.getEmailAddr(),
+                clientUpdateDto.getBeginYmd(),
+                clientUpdateDto.getEndYmd()
+        );
         return client.getId();
     }
 
