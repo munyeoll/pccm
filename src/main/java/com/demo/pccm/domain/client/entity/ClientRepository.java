@@ -8,4 +8,6 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 
     Optional<Client> findByClientNo(String clientNo);
 
+    Optional<Client> findByDeleteYn(String deleteYn);
+
 }
