@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>고객목록</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<h1>고객목록</h1>
+<table id="data-table">
+    <thead>
+    <tr>
+        <th>아이디</th>
+        <th>성명</th>
+        <th>연락처</th>
+        <th>이메일</th>
+        <th>시작일</th>
+        <th>종료일</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<script>
+    fetch("http://localhost:8080/api/client/list")
+        .then(response => response.json())
+        .then(response => {
+            console.log(response);
+            if( response.status === 200 ) {
+                console.log(response.data);
+                drawClientList(response.data);
+            }
+        })
+    ;
+
+    function drawClientList(data) {
+        const dataTable = document.getElementById('data-table');
+        const tbody = dataTable.getElementsByTagName('tbody')[0];
+
+        data.forEach(function(element) {
+            const row = document.createElement('tr');
+
+            let id = document.createElement('td');
+            id.textContent = element.id;
+            let clientName = document.createElement('td');
+            clientName.textContent = element.clientName;
+            let phoneNo = document.createElement('td');
+            phoneNo.textContent = element.phoneNo;
+            let emailAddr = document.createElement('td');
+            emailAddr.textContent = element.emailAddr;
+            let beginYmd = document.createElement('td');
+            beginYmd.textContent = element.beginYmd;
+            let endYmd = document.createElement('td');
+            endYmd.textContent = element.endYmd;
+
+            row.appendChild(id);
+            row.appendChild(clientName);
+            row.appendChild(phoneNo);
+            row.appendChild(emailAddr);
+            row.appendChild(beginYmd);
+            row.appendChild(endYmd);
+            tbody.appendChild(row);
+        });
+    }
+</script>
+</body>
+</html>
