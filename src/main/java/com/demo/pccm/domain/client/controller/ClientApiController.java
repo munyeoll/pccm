@@ -1,4 +1,4 @@
-package com.demo.pccm.domain.client.api;
+package com.demo.pccm.domain.client.controller;
 
 import com.demo.pccm.domain.client.dto.ClientDto;
 import com.demo.pccm.domain.client.dto.ClientSaveDto;
@@ -6,7 +6,6 @@ import com.demo.pccm.domain.client.dto.ClientUpdateDto;
 import com.demo.pccm.domain.client.service.ClientService;
 import com.demo.pccm.global.response.ResponseObject;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RequiredArgsConstructor
-@RequestMapping("/client")
+@RequestMapping("/api/client")
 @RestController
 public class ClientApiController {
 
