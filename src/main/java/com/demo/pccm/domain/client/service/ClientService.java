@@ -41,7 +41,7 @@ public class ClientService {
      * @param clientUpdateDto
      * @return Long(Client id)
      */
-    public Long update(Long id, ClientUpdateDto clientUpdateDto) {
+    public void update(Long id, ClientUpdateDto clientUpdateDto) {
         Client client = clientRepository.findById(id).orElseThrow(() ->
                 new BusinessException(ErrorCode.INVALID_PARAMETER));
         client.update(
@@ -51,7 +51,6 @@ public class ClientService {
                 clientUpdateDto.getBeginYmd(),
                 clientUpdateDto.getEndYmd()
         );
-        return client.getId();
     }
 
     /**
@@ -60,11 +59,10 @@ public class ClientService {
      * @param id
      * @return Long(Client id)
      */
-    public Long delete(Long id) {
+    public void delete(Long id) {
         Client client = clientRepository.findById(id).orElseThrow(() ->
                 new BusinessException(ErrorCode.INVALID_PARAMETER));
         client.delete();
-        return id;
     }
 
     /**
@@ -83,7 +81,7 @@ public class ClientService {
      * @return List<ClientDto>
      */
     public List<ClientDto> getClientList() {
-        Optional<Client> clientList = clientRepository.findByDeleteYn("N");
+        List<Client> clientList = clientRepository.findByDeleteYn("N");
         return clientList.stream().map(client -> new ClientDto(client)).collect(Collectors.toList());
     }
 
