@@ -13,4 +13,9 @@ public class ClientPageController {
         return "client/client-list";
     }
 
+    @GetMapping("/info")
+    public String clientInfo() {
+        return "client/client-info";
+    }
+
 }
