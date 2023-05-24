@@ -24,6 +24,11 @@
             border: 1px solid #ccc;
         }
 
+        td.color-blue {
+            color: blue;
+            cursor: pointer;
+        }
+
         th {
             background-color: #f2f2f2;
         }
@@ -34,49 +39,79 @@
 <table id="data-table">
     <thead>
     <tr>
-        <th>아이디</th>
+        <th>ID</th>
         <th>성명</th>
         <th>연락처</th>
         <th>이메일</th>
         <th>시작일</th>
         <th>종료일</th>
+        <th>삭제</th>
     </tr>
     </thead>
-    <tbody>
+    <tbody id="data-table-body">
     </tbody>
 </table>
 
 <script>
-    fetch("http://localhost:8080/api/client/list")
-        .then(response => response.json())
-        .then(response => {
-            console.log(response);
-            if( response.status === 200 ) {
-                console.log(response.data);
-                drawClientList(response.data);
-            }
-        })
-    ;
+    document.addEventListener("DOMContentLoaded", function(){
+        // 고객목록 조회
+        getClientList();
+    });
 
-    function drawClientList(data) {
+    /**
+     * 고객목록 조회
+     */
+    function getClientList() {
+        fetch("http://localhost:8080/api/client/list")
+            .then(response => response.json())
+            .then(response => {
+                if( response.status === 200 ) {
+                    drawClientList(response.data);
+                }
+            });
+    }
+
+    /**
+     * 고객목록 그리기
+     */
+    function drawClientList(clientList) {
+        document.getElementById("data-table-body").innerHTML = "";
+
         const dataTable = document.getElementById('data-table');
         const tbody = dataTable.getElementsByTagName('tbody')[0];
 
-        data.forEach(function(element) {
+        clientList.forEach(function(element) {
             const row = document.createElement('tr');
 
-            let id = document.createElement('td');
+            const id = document.createElement('td');
             id.textContent = element.id;
-            let clientName = document.createElement('td');
+
+            const clientName = document.createElement('td');
             clientName.textContent = element.clientName;
-            let phoneNo = document.createElement('td');
+            clientName.className = "color-blue";
+            clientName.addEventListener("click", () => {
+                location.href = "/client/info?id=" + element.id;
+            });
+
+            const phoneNo = document.createElement('td');
             phoneNo.textContent = element.phoneNo;
-            let emailAddr = document.createElement('td');
+
+            const emailAddr = document.createElement('td');
             emailAddr.textContent = element.emailAddr;
-            let beginYmd = document.createElement('td');
+
+            const beginYmd = document.createElement('td');
             beginYmd.textContent = element.beginYmd;
-            let endYmd = document.createElement('td');
+
+            const endYmd = document.createElement('td');
             endYmd.textContent = element.endYmd;
+
+            const deleteTd = document.createElement('td');
+            const deleteBtn =  document.createElement('button');
+            deleteBtn.innerText = "삭제";
+            deleteBtn.addEventListener("click", () => {
+                deleteClient(element);
+            });
+            deleteTd.appendChild(deleteBtn);
 
             row.appendChild(id);
             row.appendChild(clientName);
@@ -84,8 +119,30 @@
             row.appendChild(emailAddr);
             row.appendChild(beginYmd);
             row.appendChild(endYmd);
+            row.appendChild(deleteTd);
             tbody.appendChild(row);
         });
+    }
+
+    /**
+     * 고객정보 삭제
+     */
+    function deleteClient(client) {
+        if( confirm("[" + client.clientName + "] 고객을 삭제하시겠습니까?") ) {
+            fetch("http://localhost:8080/api/client/"+client.id, {
+                method: "DELETE"
+            })
+            .then(response => response.json())
+            .then(response => {
+                if( response.status === 200 ) {
+                    alert("삭제가 완료되었습니다.");
+                    getClientList();
+                } else {
+                    console.log(response);
+                    alert("고객정보 삭제를 실패하였습니다.");
+                }
+            });
+        }
     }
 </script>
 </body>
