@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>신규고객생성</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .client-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            background-color: #ffffff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .label {
+            font-weight: bold;
+            width: 100px;
+        }
+
+        .data {
+            flex-grow: 1;
+            padding-left: 10px;
+        }
+
+        .button {
+            padding: 8px 14px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        input {
+            width: 100%;
+            height: 30px;
+            outline: none;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+<h1>신규고객생성</h1>
+<form id="clientNewForm">
+    <div class="client-info">
+        <div class="label">고객번호</div>
+        <div class="data">
+            <input type="text" name="clientNo" />
+        </div>
+    </div>
+    <div class="client-info">
+        <div class="label">성명</div>
+        <div class="data">
+            <input type="text" name="clientName" />
+        </div>
+    </div>
+    <div class="client-info">
+        <div class="label">전화번호</div>
+        <div class="data">
+            <input type="text" name="phoneNo" />
+        </div>
+    </div>
+    <div class="client-info">
+        <div class="label">이메일</div>
+        <div class="data">
+            <input type="text" name="emailAddr" />
+        </div>
+    </div>
+    <div class="client-info">
+        <div class="label">시작일</div>
+        <div class="data">
+            <input type="text" name="beginYmd" />
+        </div>
+    </div>
+    <div class="client-info">
+        <div class="label">종료일</div>
+        <div class="data">
+            <input type="text" name="endYmd" />
+        </div>
+    </div>
+</form>
+
+<button class="button" onclick="saveClientInfo()">저장</button>
+<button class="button" onclick="gotoClientList()">목록보기</button>
+
+<script th:inline="javascript">
+    function saveClientInfo() {
+        if( !confirm("신규고객 정보를 저장하시겠습니까?") ) {
+            return;
+        }
+
+        let formJson = getFormJson();
+        fetch("http://localhost:8080/api/client", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formJson),
+            })
+            .then((response) => response.json())
+            .then((response) => {
+                if( response.status === 200 ) {
+                    alert("저장이 완료되었습니다.");
+                    gotoClientList();
+                } else {
+                    console.error(response);
+                    alert(response.message);
+                }
+            });
+    }
+
+    /**
+     * FormData to JsonData
+     */
+    function getFormJson() {
+        const serialize = (rawData) => {
+            let rtnData = {};
+            for (let [key, value] of rawData) {
+                let sel = document.querySelectorAll("input[name=" + key + "]");
+                // Array Values
+                if (sel.length > 1) {
+                    if (rtnData[key] === undefined) {
+                        rtnData[key] = [];
+                    }
+                    rtnData[key].push(value);
+                }
+                // Other
+                else {
+                    rtnData[key] = value;
+                }
+            }
+            return rtnData;
+        }
+
+        // Select Form
+        let selForm = document.querySelector("#clientNewForm");
+        // Getting an FormData
+        let data = new FormData(selForm);
+        // Getting a Serialize Data from FormData
+        let serializedFormData = serialize(data);
+        // Return FormData
+        return serializedFormData;
+    }
+
+    /**
+     * 고객목록으로 이동
+     */
+    function gotoClientList() {
+        location.href = "/client/list";
+    }
+</script>
+</body>
+</html>
