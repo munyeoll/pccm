@@ -21,4 +21,9 @@ public class ClientPageController {
         return "client/client-info";
     }
 
+    @GetMapping("/new")
+    public String clientNew() {
+        return "client/client-new";
+    }
+
 }
