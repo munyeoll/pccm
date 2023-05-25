@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>고객목록</title>
     <style>
@@ -22,6 +22,7 @@
         th, td {
             padding: 10px;
             border: 1px solid #ccc;
+            text-align: center;
         }
 
         td.color-blue {
@@ -36,10 +37,12 @@
 </head>
 <body>
 <h1>고객목록</h1>
+<button onclick="gotoClientNew()">신규고객입력</button>
 <table id="data-table">
     <thead>
     <tr>
         <th>ID</th>
+        <th>고객번호</th>
         <th>성명</th>
         <th>연락처</th>
         <th>이메일</th>
@@ -86,12 +89,15 @@
             const id = document.createElement('td');
             id.textContent = element.id;
 
-            const clientName = document.createElement('td');
-            clientName.textContent = element.clientName;
-            clientName.className = "color-blue";
-            clientName.addEventListener("click", () => {
+            const clientNo = document.createElement('td');
+            clientNo.textContent = element.clientNo;
+            clientNo.className = "color-blue";
+            clientNo.addEventListener("click", () => {
                 location.href = "/client/info?id=" + element.id;
             });
+
+            const clientName = document.createElement('td');
+            clientName.textContent = element.clientName;
 
             const phoneNo = document.createElement('td');
             phoneNo.textContent = element.phoneNo;
@@ -114,6 +120,7 @@
             deleteTd.appendChild(deleteBtn);
 
             row.appendChild(id);
+            row.appendChild(clientNo);
             row.appendChild(clientName);
             row.appendChild(phoneNo);
             row.appendChild(emailAddr);
@@ -143,6 +150,13 @@
                 }
             });
         }
+    }
+
+    /**
+     * 신규고객입력으로 이동
+     */
+    function gotoClientNew() {
+        location.href = "/client/new";
     }
 </script>
 </body>
