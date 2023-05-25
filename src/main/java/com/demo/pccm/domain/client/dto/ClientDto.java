@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 public class ClientDto {
 
-    private Long id;
+    private Long clientId;
     private String clientNo;
     private String clientName;
     private String phoneNo;
@@ -21,7 +21,7 @@ public class ClientDto {
     private LocalDateTime deletedDate;
 
     public ClientDto(Client entity) {
-        this.id = entity.getId();
+        this.clientId = entity.getClientId();
         this.clientNo = entity.getClientNo();
         this.clientName = entity.getClientName();
         this.phoneNo = entity.getPhoneNo();

@@ -120,8 +120,8 @@
      */
     function getClientInfo() {
         disableClientInfo();
-        const id = [[${id}]];
-        fetch("http://localhost:8080/api/client/"+id)
+        const clientId = [[${clientId}]];
+        fetch("http://localhost:8080/api/client/"+clientId)
             .then(response => response.json())
             .then(response => {
                 if( response.status === 200 ) {
@@ -175,8 +175,8 @@
         }
 
         let formJson = getFormJson();
-        const id = [[${id}]];
-        fetch("http://localhost:8080/api/client/"+id, {
+        const clientId = [[${clientId}]];
+        fetch("http://localhost:8080/api/client/"+clientId, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

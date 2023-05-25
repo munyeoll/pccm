@@ -16,8 +16,8 @@ public class ClientPageController {
     }
 
     @GetMapping("/info")
-    public String clientInfo(@RequestParam Long id, Model model) {
-        model.addAttribute("id", id);
+    public String clientInfo(@RequestParam Long clientId, Model model) {
+        model.addAttribute("clientId", clientId);
         return "client/client-info";
     }
 

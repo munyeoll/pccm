@@ -21,7 +21,7 @@ public class Client {
             strategy = GenerationType.SEQUENCE,
             generator = "CLIENT_SEQ_GENERATOR"
     )
-    private Long id;
+    private Long clientId;
 
     @Column(nullable = false, length = 15)
     private String clientNo;

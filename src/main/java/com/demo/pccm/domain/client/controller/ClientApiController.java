@@ -24,12 +24,12 @@ public class ClientApiController {
      */
     @PostMapping
     public ResponseEntity<ResponseObject<Object>> save(@RequestBody ClientSaveDto clientSaveDto) {
-        Long id = clientService.save(clientSaveDto);
+        Long clientId = clientService.save(clientSaveDto);
         return ResponseEntity.ok().body(
                 ResponseObject.builder()
                         .status(HttpStatus.OK.value())
                         .message("신규 고객정보 저장이 완료되었습니다.")
-                        .data(id)
+                        .data(clientId)
                         .build()
         );
     }
@@ -37,9 +37,9 @@ public class ClientApiController {
     /*
      * 고객정보 수정 요청
      */
-    @PatchMapping("/{id}")
-    public ResponseEntity<ResponseObject<Object>> update(@PathVariable Long id, @RequestBody ClientUpdateDto clientUpdateDto) {
-        clientService.update(id, clientUpdateDto);
+    @PatchMapping("/{client-id}")
+    public ResponseEntity<ResponseObject<Object>> update(@PathVariable("client-id") Long clientId, @RequestBody ClientUpdateDto clientUpdateDto) {
+        clientService.update(clientId, clientUpdateDto);
         return ResponseEntity.ok().body(
                 ResponseObject.builder()
                         .status(HttpStatus.OK.value())
@@ -52,9 +52,9 @@ public class ClientApiController {
     /*
      * 고객정보 삭제 요청
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseObject<Object>> delete(@PathVariable Long id) {
-        clientService.delete(id);
+    @DeleteMapping("/{client-id}")
+    public ResponseEntity<ResponseObject<Object>> delete(@PathVariable("client-id") Long clientId) {
+        clientService.delete(clientId);
         return ResponseEntity.ok().body(
                 ResponseObject.builder()
                         .status(HttpStatus.OK.value())
@@ -67,9 +67,9 @@ public class ClientApiController {
     /*
      * 고객정보 조회 요청
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<ResponseObject<Object>> getClientById(@PathVariable Long id) {
-        ClientDto client = clientService.getClientById(id);
+    @GetMapping("/{client-id}")
+    public ResponseEntity<ResponseObject<Object>> getClientById(@PathVariable("client-id") Long clientId) {
+        ClientDto client = clientService.getClientById(clientId);
         return ResponseEntity.ok().body(
                 ResponseObject.builder()
                         .status(HttpStatus.OK.value())

@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -32,17 +31,17 @@ public class ClientService {
             throw new BusinessException(ErrorCode.CONFLICT);
         }
         Client client = clientRepository.save(clientSaveDto.toEntity());
-        return client.getId();
+        return client.getClientId();
     }
 
     /**
      * 고객정보 수정
-     * @param id
+     * @param clientId
      * @param clientUpdateDto
      * @return Long(Client id)
      */
-    public void update(Long id, ClientUpdateDto clientUpdateDto) {
-        Client client = clientRepository.findById(id).orElseThrow(() ->
+    public void update(Long clientId, ClientUpdateDto clientUpdateDto) {
+        Client client = clientRepository.findById(clientId).orElseThrow(() ->
                 new BusinessException(ErrorCode.INVALID_PARAMETER));
         client.update(
                 clientUpdateDto.getClientName(),
@@ -56,22 +55,22 @@ public class ClientService {
     /**
      * 고객정보 삭제
      * delete_yn = "Y" 로 업데이트
-     * @param id
+     * @param clientId
      * @return Long(Client id)
      */
-    public void delete(Long id) {
-        Client client = clientRepository.findById(id).orElseThrow(() ->
+    public void delete(Long clientId) {
+        Client client = clientRepository.findById(clientId).orElseThrow(() ->
                 new BusinessException(ErrorCode.INVALID_PARAMETER));
         client.delete();
     }
 
     /**
      * 고객정보 조회
-     * @param id
+     * @param clientId
      * @return ClientDto
      */
-    public ClientDto getClientById(Long id) {
-        Client client = clientRepository.findById(id).orElseThrow(() ->
+    public ClientDto getClientById(Long clientId) {
+        Client client = clientRepository.findById(clientId).orElseThrow(() ->
                 new BusinessException(ErrorCode.INVALID_PARAMETER));
         return new ClientDto(client);
     }
