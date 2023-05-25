@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class ClientDto {
 
     private Long id;
+    private String clientNo;
     private String clientName;
     private String phoneNo;
     private String emailAddr;
@@ -21,6 +22,7 @@ public class ClientDto {
 
     public ClientDto(Client entity) {
         this.id = entity.getId();
+        this.clientNo = entity.getClientNo();
         this.clientName = entity.getClientName();
         this.phoneNo = entity.getPhoneNo();
         this.emailAddr = entity.getEmailAddr();
