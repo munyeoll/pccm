@@ -68,7 +68,13 @@
 <h1>고객정보</h1>
 <form id="clientInfoForm">
     <div class="client-info">
-        <div class="label">이름</div>
+        <div class="label">고객번호</div>
+        <div class="data">
+            <input type="text" name="clientNo" readonly />
+        </div>
+    </div>
+    <div class="client-info">
+        <div class="label">성명</div>
         <div class="data">
             <input type="text" name="clientName" readonly />
         </div>
@@ -142,7 +148,9 @@
     function editableClientInfo() {
         let inputTags = document.querySelectorAll("input");
         inputTags.forEach((input) => {
-            input.removeAttribute("readonly");
+            if( input.name !== "clientNo" ) {
+                input.readOnly = false;
+            }
         });
     }
 
@@ -152,7 +160,9 @@
     function disableClientInfo() {
         let inputTags = document.querySelectorAll("input");
         inputTags.forEach((input) => {
-            input.readOnly = true;
+            if( input.name !== "clientNo" ) {
+                input.readOnly = true;
+            }
         });
     }
 
@@ -218,6 +228,9 @@
         return serializedFormData;
     }
 
+    /**
+     * 고객목록을 이동
+     */
     function gotoClientList() {
         location.href = "/client/list";
     }
