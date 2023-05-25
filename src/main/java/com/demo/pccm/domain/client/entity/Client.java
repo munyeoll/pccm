@@ -48,6 +48,12 @@ public class Client {
     private LocalDateTime modifiedDate;
     private LocalDateTime deletedDate;
 
+    @OneToOne(
+            fetch = FetchType.LAZY,
+            mappedBy = "client"
+    )
+    private ClientInfo clientInfo;
+
     @Builder
     public Client(String clientNo, String clientName, String phoneNo, String emailAddr, String beginYmd, String endYmd) {
         this.clientNo = clientNo;
