@@ -1,6 +1,7 @@
 package com.demo.pccm.domain.client.dto;
 
 import com.demo.pccm.domain.client.entity.Client;
+import com.demo.pccm.domain.client.entity.ClientInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -17,7 +18,9 @@ public class ClientSaveDto {
     private String beginYmd;
     private String endYmd;
 
-    public Client toEntity() {
+    private String accessRouteCode;
+
+    public Client toClientEntity() {
         return Client.builder()
                 .clientNo(clientNo)
                 .clientName(clientName)
@@ -28,4 +31,10 @@ public class ClientSaveDto {
                 .build();
     }
 
+    public ClientInfo toClientInfoEntity(Client client) {
+        return ClientInfo.builder()
+                .accessRouteCode(accessRouteCode)
+                .client(client)
+                .build();
+    }
 }

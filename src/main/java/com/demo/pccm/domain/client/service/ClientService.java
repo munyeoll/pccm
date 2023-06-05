@@ -4,11 +4,13 @@ import com.demo.pccm.domain.client.dto.ClientDto;
 import com.demo.pccm.domain.client.dto.ClientUpdateDto;
 import com.demo.pccm.domain.client.dto.ClientSaveDto;
 import com.demo.pccm.domain.client.entity.Client;
+import com.demo.pccm.domain.client.entity.ClientInfoRepository;
 import com.demo.pccm.domain.client.entity.ClientRepository;
 import com.demo.pccm.global.exception.BusinessException;
 import com.demo.pccm.global.exception.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,9 +19,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 @Transactional
+@Slf4j
 public class ClientService {
 
     private final ClientRepository clientRepository;
+    private final ClientInfoRepository clientInfoRepository;
 
     /**
      * 신규 고객정보 생성
@@ -30,7 +34,8 @@ public class ClientService {
         if( checkDuplicateClientNo(clientSaveDto.getClientNo()) ){
             throw new BusinessException(ErrorCode.CONFLICT);
         }
-        Client client = clientRepository.save(clientSaveDto.toEntity());
+        Client client = clientRepository.save(clientSaveDto.toClientEntity());
+        clientInfoRepository.save(clientSaveDto.toClientInfoEntity(client));
         return client.getClientId();
     }
 
@@ -49,6 +54,9 @@ public class ClientService {
                 clientUpdateDto.getEmailAddr(),
                 clientUpdateDto.getBeginYmd(),
                 clientUpdateDto.getEndYmd()
+        );
+        client.getClientInfo().update(
+                clientUpdateDto.getAccessRouteCode()
         );
     }
 

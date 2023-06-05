@@ -1,6 +1,7 @@
 package com.demo.pccm.domain.client.dto;
 
 
+import com.demo.pccm.domain.client.entity.ClientInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -15,5 +16,7 @@ public class ClientUpdateDto {
     private String emailAddr;
     private String beginYmd;
     private String endYmd;
+
+    private String accessRouteCode;
 
 }

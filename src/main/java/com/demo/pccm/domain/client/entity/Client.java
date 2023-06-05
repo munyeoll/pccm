@@ -49,8 +49,8 @@ public class Client {
     private LocalDateTime deletedDate;
 
     @OneToOne(
-            fetch = FetchType.LAZY,
-            mappedBy = "client"
+            mappedBy = "client",
+            cascade = CascadeType.PERSIST
     )
     private ClientInfo clientInfo;
 

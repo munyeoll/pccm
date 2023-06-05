@@ -2,6 +2,7 @@ package com.demo.pccm.domain.client.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -30,4 +31,13 @@ public class ClientInfo {
     @JoinColumn(name = "clientId")
     private Client client;
 
+    @Builder
+    public ClientInfo(String accessRouteCode, Client client) {
+        this.accessRouteCode = accessRouteCode;
+        this.client = client;
+    }
+
+    public void update(String accessRouteCode) {
+        this.accessRouteCode = accessRouteCode;
+    }
 }
