@@ -5,6 +5,7 @@ import com.demo.pccm.domain.client.dto.ClientSaveDto;
 import com.demo.pccm.domain.client.dto.ClientUpdateDto;
 import com.demo.pccm.domain.client.service.ClientService;
 import com.demo.pccm.global.response.ResponseObject;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class ClientApiController {
      * 신규 고객정보 생성 요청
      */
     @PostMapping
-    public ResponseEntity<ResponseObject<Object>> save(@RequestBody ClientSaveDto clientSaveDto) {
+    public ResponseEntity<ResponseObject<Object>> save(@RequestBody @Valid ClientSaveDto clientSaveDto) {
         Long clientId = clientService.save(clientSaveDto);
         return ResponseEntity.ok().body(
                 ResponseObject.builder()
@@ -38,7 +39,7 @@ public class ClientApiController {
      * 고객정보 수정 요청
      */
     @PatchMapping("/{client-id}")
-    public ResponseEntity<ResponseObject<Object>> update(@PathVariable("client-id") Long clientId, @RequestBody ClientUpdateDto clientUpdateDto) {
+    public ResponseEntity<ResponseObject<Object>> update(@PathVariable("client-id") Long clientId, @RequestBody @Valid ClientUpdateDto clientUpdateDto) {
         clientService.update(clientId, clientUpdateDto);
         return ResponseEntity.ok().body(
                 ResponseObject.builder()
