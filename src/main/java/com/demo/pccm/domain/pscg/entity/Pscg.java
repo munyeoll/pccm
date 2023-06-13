@@ -1,5 +1,6 @@
 package com.demo.pccm.domain.pscg.entity;
 
+import com.demo.pccm.domain.common.CommonEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 )
 @Entity
 @Data
-public class Pscg {
+public class Pscg extends CommonEntity {
     @Id
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
@@ -37,8 +38,6 @@ public class Pscg {
     @Column
     private String deleteYn;
 
-    private LocalDateTime createdDate;
-    private LocalDateTime modifiedDate;
     private LocalDateTime deletedDate;
 
     @Builder
@@ -47,12 +46,12 @@ public class Pscg {
         this.pscgName = pscgName;
         this.phoneNo = phoneNo;
         this.deleteYn = "N";
-        this.createdDate = LocalDateTime.now();
+        setCreatedDate();
     }
 
     public void update(String pscgName, String phoneNo) {
         this.pscgName = pscgName;
-        this.modifiedDate = LocalDateTime.now();
+        setModifiedDate();
     }
 
     public void delete() {

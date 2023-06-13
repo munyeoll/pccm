@@ -1,5 +1,6 @@
 package com.demo.pccm.domain.client.entity;
 
+import com.demo.pccm.domain.common.CommonEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 )
 @Entity
 @Data
-public class Client {
+public class Client extends CommonEntity {
 
     @Id
     @GeneratedValue(
@@ -44,8 +45,6 @@ public class Client {
     @Column(length = 1)
     private String deleteYn;
 
-    private LocalDateTime createdDate;
-    private LocalDateTime modifiedDate;
     private LocalDateTime deletedDate;
 
     @OneToOne(
@@ -63,7 +62,7 @@ public class Client {
         this.beginYmd = beginYmd;
         this.endYmd = endYmd;
         this.deleteYn = "N";
-        this.createdDate = LocalDateTime.now();
+        setCreatedDate();
     }
 
     public void update(String clientName, String phoneNo, String emailAddr, String beginYmd, String endYmd) {
@@ -72,7 +71,7 @@ public class Client {
         this.emailAddr = emailAddr;
         this.beginYmd = beginYmd;
         this.endYmd = endYmd;
-        this.modifiedDate = LocalDateTime.now();
+        setModifiedDate();
     }
 
     public void delete() {
