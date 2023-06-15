@@ -1,25 +1,21 @@
 package com.demo.pccm.domain.client.service;
 
 import com.demo.pccm.domain.client.dto.ClientDto;
-import com.demo.pccm.domain.client.dto.ClientUpdateDto;
 import com.demo.pccm.domain.client.dto.ClientSaveDto;
+import com.demo.pccm.domain.client.dto.ClientUpdateDto;
 import com.demo.pccm.domain.client.entity.Client;
 import com.demo.pccm.domain.client.entity.ClientInfoRepository;
 import com.demo.pccm.domain.client.entity.ClientRepository;
+import com.demo.pccm.domain.common.MyService;
 import com.demo.pccm.global.exception.BusinessException;
 import com.demo.pccm.global.exception.ErrorCode;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-@Service
-@Transactional
-@Slf4j
+@MyService
 public class ClientService {
 
     private final ClientRepository clientRepository;
