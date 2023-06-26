@@ -1,6 +1,7 @@
 package com.demo.pccm.domain.pscg.controller;
 
 import com.demo.pccm.domain.pscg.dto.PscgSaveDto;
+import com.demo.pccm.domain.pscg.dto.PscgUpdateDto;
 import com.demo.pccm.domain.pscg.service.PscgService;
 import com.demo.pccm.global.response.ResponseObject;
 import jakarta.validation.Valid;
@@ -27,4 +28,15 @@ public class PscgApiController {
         );
     }
 
+    @PatchMapping("/{pscg-id}")
+    public ResponseEntity<ResponseObject<Object>> update(@PathVariable("pscg-id") Long pscgId, @RequestBody @Valid PscgUpdateDto pscgUpdateDto) {
+        pscgService.update(pscgId, pscgUpdateDto);
+        return ResponseEntity.ok().body(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK.value())
+                        .message("상담사정보 수정이 완료되었습니다.")
+                        .data(pscgId)
+                        .build()
+        );
+    }
 }
