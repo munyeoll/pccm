@@ -62,7 +62,6 @@ public class Client extends CommonEntity {
         this.beginYmd = beginYmd;
         this.endYmd = endYmd;
         this.deleteYn = "N";
-        setCreatedDate();
     }
 
     public void update(String clientName, String phoneNo, String emailAddr, String beginYmd, String endYmd) {
@@ -71,7 +70,6 @@ public class Client extends CommonEntity {
         this.emailAddr = emailAddr;
         this.beginYmd = beginYmd;
         this.endYmd = endYmd;
-        setModifiedDate();
     }
 
     public void delete() {

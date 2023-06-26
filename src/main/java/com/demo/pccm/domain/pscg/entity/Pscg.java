@@ -46,13 +46,11 @@ public class Pscg extends CommonEntity {
         this.pscgName = pscgName;
         this.phoneNo = phoneNo;
         this.deleteYn = "N";
-        setCreatedDate();
     }
 
     public void update(String pscgName, String phoneNo) {
         this.pscgName = pscgName;
         this.phoneNo = phoneNo;
-        setModifiedDate();
     }
 
     public void delete() {

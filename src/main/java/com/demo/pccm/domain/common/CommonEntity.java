@@ -1,24 +1,31 @@
 package com.demo.pccm.domain.common;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
-public class CommonEntity {
+@Getter
+@Setter
+@MappedSuperclass
+public abstract class CommonEntity {
+    @Column(updatable = false)
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
 
-    public LocalDateTime getCreatedDate() {
-        return createdDate;
+    @PrePersist
+    public void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+        createdDate = now;
+        modifiedDate = now;
     }
 
-    public void setCreatedDate() {
-        this.createdDate = LocalDateTime.now();
-    }
-
-    public LocalDateTime getModifiedDate() {
-        return modifiedDate;
-    }
-
-    public void setModifiedDate() {
-        this.modifiedDate = LocalDateTime.now();
+    @PreUpdate
+    public void preUpdate() {
+        modifiedDate = LocalDateTime.now();
     }
 }
