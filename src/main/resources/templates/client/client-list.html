@@ -1,140 +1,81 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <link href="/node_modules/tabulator-tables/dist/css/tabulator_semanticui.min.css" rel="stylesheet">
     <title>고객목록</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            padding: 10px;
-            border: 1px solid #ccc;
-            text-align: center;
-        }
-
-        td.color-blue {
-            color: blue;
-            cursor: pointer;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
 </head>
 <body>
 <h1>고객목록</h1>
-<button onclick="gotoClientNew()">신규고객입력</button>
-<table id="data-table">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>고객번호</th>
-        <th>성명</th>
-        <th>연락처</th>
-        <th>이메일</th>
-        <th>시작일</th>
-        <th>종료일</th>
-        <th>삭제</th>
-    </tr>
-    </thead>
-    <tbody id="data-table-body">
-    </tbody>
-</table>
+<!-- 고객목록 그리드 -->
+<div id="client-grid" class="tabulator"></div>
 
+<script type="text/javascript" src="/node_modules/tabulator-tables/dist/js/tabulator.min.js"></script>
+<script type="text/javascript" src="/node_modules/luxon/build/global/luxon.min.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function(){
-        // 고객목록 조회
-        getClientList();
+    let clientGrid;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initGrid();
     });
+
+    /**
+     * 그리드 초기화
+     */
+    const initGrid = () => {
+        clientGrid = new Tabulator("#client-grid", {
+            height: '100%',
+            maxHeight: '100%',
+            minHeight: '300px',
+            layout: "fitData",
+            columns: [
+                {title:"고객번호", field: "clientNo", width: 100},
+                {title:"성명", field: "clientName", width: 100},
+                {title:"연락처", field: "phoneNo", width: 100},
+                {title:"이메일", field:"emailAddr", width: 100},
+                {title:"시작일", field:"beginYmd", width: 100, formatter:"datetime", formatterParams:{
+                    inputFormat:"yyyyMMdd",
+                    outputFormat:"yyyy-MM-dd",
+                    invalidPlaceholder:"(invalid date)",
+                }},
+                {title:"종료일", field:"endYmd", width: 100, formatter:"datetime", formatterParams:{
+                    inputFormat:"yyyyMMdd",
+                    outputFormat:"yyyy-MM-dd",
+                    invalidPlaceholder:"(invalid date)",
+                }},
+                {title:"수정", formatter:"buttonTick", width:30, hozAlign:"center",
+                    cellClick:function(e, cell){
+                        alert("수정~");
+                    }
+                },
+                {title:"삭제", formatter:"buttonCross", width:30, hozAlign:"center",
+                    cellClick:function(e, cell){
+                        deleteClient(cell.getRow().getData());
+                    }
+                },
+            ],
+        });
+
+        getClientList();
+     }
 
     /**
      * 고객목록 조회
      */
-    function getClientList() {
+    const getClientList = () => {
         fetch("http://localhost:8080/api/client/list")
             .then(response => response.json())
             .then(response => {
                 if( response.status === 200 ) {
-                    drawClientList(response.data);
+                    clientGrid.replaceData(response.data);
                 }
-            });
-    }
-
-    /**
-     * 고객목록 그리기
-     */
-    function drawClientList(clientList) {
-        document.getElementById("data-table-body").innerHTML = "";
-
-        const dataTable = document.getElementById('data-table');
-        const tbody = dataTable.getElementsByTagName('tbody')[0];
-
-        clientList.forEach(function(element) {
-            const row = document.createElement('tr');
-
-            const clientId = document.createElement('td');
-            clientId.textContent = element.clientId;
-
-            const clientNo = document.createElement('td');
-            clientNo.textContent = element.clientNo;
-            clientNo.className = "color-blue";
-            clientNo.addEventListener("click", () => {
-                location.href = "/client/info?clientId=" + element.clientId;
-            });
-
-            const clientName = document.createElement('td');
-            clientName.textContent = element.clientName;
-
-            const phoneNo = document.createElement('td');
-            phoneNo.textContent = element.phoneNo;
-
-            const emailAddr = document.createElement('td');
-            emailAddr.textContent = element.emailAddr;
-
-            const beginYmd = document.createElement('td');
-            beginYmd.textContent = element.beginYmd;
-
-            const endYmd = document.createElement('td');
-            endYmd.textContent = element.endYmd;
-
-            const deleteTd = document.createElement('td');
-            const deleteBtn =  document.createElement('button');
-            deleteBtn.innerText = "삭제";
-            deleteBtn.addEventListener("click", () => {
-                deleteClient(element);
-            });
-            deleteTd.appendChild(deleteBtn);
-
-            row.appendChild(clientId);
-            row.appendChild(clientNo);
-            row.appendChild(clientName);
-            row.appendChild(phoneNo);
-            row.appendChild(emailAddr);
-            row.appendChild(beginYmd);
-            row.appendChild(endYmd);
-            row.appendChild(deleteTd);
-            tbody.appendChild(row);
-        });
+            }
+        );
     }
 
     /**
      * 고객정보 삭제
      */
-    function deleteClient(client) {
+    const deleteClient = (client) => {
         if( confirm("[" + client.clientName + "] 고객을 삭제하시겠습니까?") ) {
             fetch("http://localhost:8080/api/client/"+client.clientId, {
                 method: "DELETE"
@@ -150,13 +91,6 @@
                 }
             });
         }
-    }
-
-    /**
-     * 신규고객입력으로 이동
-     */
-    function gotoClientNew() {
-        location.href = "/client/new";
     }
 </script>
 </body>
