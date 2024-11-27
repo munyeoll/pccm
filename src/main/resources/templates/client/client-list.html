@@ -3,16 +3,69 @@
 <head>
     <link href="/node_modules/tabulator-tables/dist/css/tabulator_semanticui.min.css" rel="stylesheet">
     <title>고객목록</title>
+    <style>
+     .popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 300px;
+        background: white;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        display: none;
+        z-index: 1000;
+    }
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        z-index: 999;
+    }
+    .popup input {
+        width: 100%;
+        padding: 8px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .popup button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        background: #007bff;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .popup button:hover {
+        background: #0056b3;
+    }
+    </style>
 </head>
 <body>
 <h1>고객목록</h1>
 <!-- 고객목록 그리드 -->
 <div id="client-grid" class="tabulator"></div>
 
+<div class="popup-overlay"></div>
+<div class="popup" id="popup">
+    <h2>Edit Item</h2>
+    <input type="text" id="editName" placeholder="Name">
+    <button id="saveButton">Save</button>
+</div>
+
 <script type="text/javascript" src="/node_modules/tabulator-tables/dist/js/tabulator.min.js"></script>
 <script type="text/javascript" src="/node_modules/luxon/build/global/luxon.min.js"></script>
-<script>
+<script th:inline="javascript">
     let clientGrid;
+    let rowId = 0;
+    let createdRows  = [];
+    let modifiedRows = [];
 
     document.addEventListener("DOMContentLoaded", () => {
         initGrid();
@@ -28,26 +81,44 @@
             minHeight: '300px',
             layout: "fitData",
             columns: [
-                {title:"고객번호", field: "clientNo", width: 100},
-                {title:"성명", field: "clientName", width: 100},
-                {title:"연락처", field: "phoneNo", width: 100},
-                {title:"이메일", field:"emailAddr", width: 100},
-                {title:"시작일", field:"beginYmd", width: 100, formatter:"datetime", formatterParams:{
-                    inputFormat:"yyyyMMdd",
-                    outputFormat:"yyyy-MM-dd",
-                    invalidPlaceholder:"(invalid date)",
-                }},
-                {title:"종료일", field:"endYmd", width: 100, formatter:"datetime", formatterParams:{
-                    inputFormat:"yyyyMMdd",
-                    outputFormat:"yyyy-MM-dd",
-                    invalidPlaceholder:"(invalid date)",
-                }},
-                {title:"수정", formatter:"buttonTick", width:30, hozAlign:"center",
-                    cellClick:function(e, cell){
-                        alert("수정~");
+                {title: "id", field: "id", width: 80, headerSort: false, visible: false},
+                {title: "상태", field: "status", width: 120, headerSort: false},
+                {title: "고객번호", field: "clientNo", width: 120, editor: "input",
+                    cellEdited: function(cell) {
+                        let rowData = cell.getRow().getData();
+                        let existing = modifiedRows.find(r => r.id === rowData.id);
+                        if (!existing) {
+                            cell.getRow().getCell("status").setValue("수정");
+                            modifiedRows.push(rowData);
+                        }
+                    },
+                },
+                {title: "성명", field: "clientName", width: 120, editor: inputEditor},
+                {title: "연락처", field: "phoneNo", width: 120, editor: inputEditor},
+                {title: "이메일", field: "emailAddr", width: 120, editor: inputEditor},
+                {title: "시작일", field: "beginYmd", width: 120, formatter: "datetime", editor: "date",
+                    formatterParams:{
+                        inputFormat: "yyyyMMdd",
+                        outputFormat: "yyyy-MM-dd",
+                        invalidPlaceholder: "(invalid date)",
+                    },
+                    editorParams:{
+                        format: "yyyy-MM-dd",
+                        verticalNavigation: "table",
                     }
                 },
-                {title:"삭제", formatter:"buttonCross", width:30, hozAlign:"center",
+                {title: "종료일", field:"endYmd", width: 120, formatter: "datetime", editor: "date",
+                    formatterParams:{
+                        inputFormat: "yyyyMMdd",
+                        outputFormat: "yyyy-MM-dd",
+                        invalidPlaceholder: "(invalid date)",
+                    },
+                    editorParams:{
+                        format: "yyyy-MM-dd",
+                        verticalNavigation: "table",
+                    }
+                },
+                {title: "삭제", formatter:"buttonCross", width:80, hozAlign:"center", headerSort: false,
                     cellClick:function(e, cell){
                         deleteClient(cell.getRow().getData());
                     }
@@ -55,8 +126,85 @@
             ],
         });
 
+        clientGrid.on("dataLoaded", function(data){
+            if(data && data.length > 0) {
+                data.forEach(row => {row.id = rowId++});
+            }
+        });
+
         getClientList();
      }
+
+     const inputEditor = function(cell, onRendered, success, cancel, editorParams) {
+        var editor = document.createElement("input");
+        editor.setAttribute("type", "input");
+        editor.style.padding = "3px";
+        editor.style.width = "100%";
+        editor.style.boxSizing = "border-box";
+        editor.value = cell.getValue();
+
+        onRendered(function(){
+            editor.focus();
+            editor.style.css = "100%";
+        });
+
+        function onChange(){
+            if(editor.value !== cell.getValue()) {
+                cell.getRow().getCell("status").setValue("수정");
+            }
+            success(editor.value);
+        }
+
+        editor.addEventListener("blur", function(e) {
+            onChange();
+        });
+        editor.addEventListener("keydown", function(e) {
+            if(e.keyCode == 13) {
+                onChange();
+            }
+            if(e.keyCode == 27) {
+                cancel();
+            }
+        });
+
+        return editor;
+    };
+
+    /*const dateEditor = function(cell, onRendered, success, cancel, editorParams) {
+        var editor = document.createElement("input");
+        editor.setAttribute("type", "date");
+        editor.style.padding = "3px";
+        editor.style.width = "100%";
+        editor.style.boxSizing = "border-box";
+        editor.value = luxon.DateTime.fromFormat(cell.getValue(), "yyyyMMdd").toFormat("yyyy-MM-dd");
+
+        onRendered(function(){
+            editor.focus();
+            editor.style.css = "100%";
+        });
+
+        function onChange(){
+            if(editor.value !== cell.getValue()) {
+                cell.getRow().getCell("status").setValue("수정");
+            }
+            console.log(editor.value);
+            success(luxon.DateTime.fromFormat(editor.value, "yyyy-MM-dd").toFormat("yyyyMMdd"));
+        }
+
+        editor.addEventListener("blur", function(e) {
+            onChange();
+        });
+        editor.addEventListener("keydown", function(e) {
+            if(e.keyCode == 13) {
+                onChange();
+            }
+            if(e.keyCode == 27) {
+                cancel();
+            }
+        });
+
+        return editor;
+    }*/
 
     /**
      * 고객목록 조회
