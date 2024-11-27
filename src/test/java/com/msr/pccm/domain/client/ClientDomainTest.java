@@ -1,7 +1,7 @@
 package com.msr.pccm.domain.client;
 
-import com.pccm.domain.client.entity.Client;
-import com.pccm.domain.client.entity.ClientRepository;
+import com.wsm.domain.client.entity.Client;
+import com.wsm.domain.client.entity.ClientRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

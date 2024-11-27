@@ -1,7 +1,7 @@
 package com.msr.pccm.domain.pscg;
 
-import com.pccm.domain.pscg.entity.Pscg;
-import com.pccm.domain.pscg.entity.PscgRepository;
+import com.wsm.domain.pscg.entity.Pscg;
+import com.wsm.domain.pscg.entity.PscgRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
