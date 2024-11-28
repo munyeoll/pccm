@@ -66,6 +66,7 @@
     let rowId = 0;
     let createdRows  = [];
     let modifiedRows = [];
+    let deletedRows = [];
 
     document.addEventListener("DOMContentLoaded", () => {
         initGrid();
@@ -79,46 +80,77 @@
             height: '100%',
             maxHeight: '100%',
             minHeight: '300px',
+            rowHeight: 35,
             layout: "fitData",
             columns: [
                 {title: "id", field: "id", width: 80, headerSort: false, visible: false},
-                {title: "상태", field: "status", width: 120, headerSort: false},
-                {title: "고객번호", field: "clientNo", width: 120, editor: "input",
-                    cellEdited: function(cell) {
+                {title: "상태", field: "status", width: 80, headerSort: false, headerHozAlign: "center", hozAlign: "center"},
+                {title: "삭제", field: "deleteChk",
+                    formatter: function(cell) {
+                        var value = cell.getValue();
+                        return value
+                            ? "<input type='checkbox' checked />"
+                            : "<input type='checkbox' />";
+                    },
+                    cellClick: function(e, cell) {
+                        var value = cell.getValue();
+                        if(typeof value === "undefined") {
+                            value = false;
+                        }
+                        cell.setValue(!value); // 체크박스 상태 토글
+                    },
+                    cellEdited: (cell) => {
                         let rowData = cell.getRow().getData();
-                        let existing = modifiedRows.find(r => r.id === rowData.id);
-                        if (!existing) {
-                            cell.getRow().getCell("status").setValue("수정");
-                            modifiedRows.push(rowData);
+                        if(rowData.deleteChk) {
+                            cell.getRow().getCell("status").setValue("삭제");
+                            deletedRows.push(rowData);
+                        } else {
+                            cell.getRow().getCell("status").setValue("");
+                            deletedRows = deletedRows.filter(r => r.id !== rowData.id);
                         }
                     },
                 },
-                {title: "성명", field: "clientName", width: 120, editor: inputEditor},
-                {title: "연락처", field: "phoneNo", width: 120, editor: inputEditor},
-                {title: "이메일", field: "emailAddr", width: 120, editor: inputEditor},
-                {title: "시작일", field: "beginYmd", width: 120, formatter: "datetime", editor: "date",
+                {title: "고객번호", field: "clientNo", width: 120, editor: "input", headerHozAlign: "center", hozAlign: "center",
+                    cellEdited: (cell) => cellModifiedFunc(cell),
+                },
+                {title: "성명", field: "clientName", width: 120, editor: "input", headerHozAlign: "center", hozAlign: "center",
+                    cellEdited: (cell) => cellModifiedFunc(cell),
+                },
+                {title: "연락처", field: "phoneNo", width: 130, editor: "input", headerHozAlign: "center", hozAlign: "center",
+                    cellEdited: (cell) => cellModifiedFunc(cell),
+                },
+                {title: "이메일", field: "emailAddr", width: 180, editor: "input", headerHozAlign: "center", hozAlign: "left",
+                    cellEdited: (cell) => cellModifiedFunc(cell),
+                },
+                {title: "시작일", field: "beginYmd", width: 140, formatter: "datetime", editor: "date", headerHozAlign: "center", hozAlign: "center",
                     formatterParams:{
                         inputFormat: "yyyyMMdd",
                         outputFormat: "yyyy-MM-dd",
                         invalidPlaceholder: "(invalid date)",
                     },
                     editorParams:{
-                        format: "yyyy-MM-dd",
+                        min:"19000101",
+                        max:"29991231",
+                        format: "yyyyMMdd",
                         verticalNavigation: "table",
-                    }
+                    },
+                    cellEdited: (cell) => cellModifiedFunc(cell),
                 },
-                {title: "종료일", field:"endYmd", width: 120, formatter: "datetime", editor: "date",
+                {title: "종료일", field:"endYmd", width: 140, formatter: "datetime", editor: "date", headerHozAlign: "center", hozAlign: "center",
                     formatterParams:{
                         inputFormat: "yyyyMMdd",
                         outputFormat: "yyyy-MM-dd",
                         invalidPlaceholder: "(invalid date)",
                     },
                     editorParams:{
-                        format: "yyyy-MM-dd",
+                        min:"19000101",
+                        max:"29991231",
+                        format: "yyyyMMdd",
                         verticalNavigation: "table",
-                    }
+                    },
+                    cellEdited: (cell) => cellModifiedFunc(cell),
                 },
-                {title: "삭제", formatter:"buttonCross", width:80, hozAlign:"center", headerSort: false,
+                {title: "삭제", formatter:"buttonCross", width:80, hozAlign:"center", headerSort: false, headerHozAlign: "center",
                     cellClick:function(e, cell){
                         deleteClient(cell.getRow().getData());
                     }
@@ -128,12 +160,24 @@
 
         clientGrid.on("dataLoaded", function(data){
             if(data && data.length > 0) {
-                data.forEach(row => {row.id = rowId++});
+                data.forEach(row => {
+                    row.id = rowId++;
+                    row.deleteChk = false;
+                });
             }
         });
 
         getClientList();
-     }
+    }
+
+    const cellModifiedFunc = (cell) => {
+        let rowData = cell.getRow().getData();
+        let existing = modifiedRows.find(r => r.id === rowData.id);
+        if (!existing) {
+            cell.getRow().getCell("status").setValue("수정");
+            modifiedRows.push(rowData);
+        }
+    }
 
      const inputEditor = function(cell, onRendered, success, cancel, editorParams) {
         var editor = document.createElement("input");
@@ -170,7 +214,7 @@
         return editor;
     };
 
-    /*const dateEditor = function(cell, onRendered, success, cancel, editorParams) {
+    const dateEditor = function(cell, onRendered, success, cancel, editorParams) {
         var editor = document.createElement("input");
         editor.setAttribute("type", "date");
         editor.style.padding = "3px";
@@ -204,7 +248,7 @@
         });
 
         return editor;
-    }*/
+    }
 
     /**
      * 고객목록 조회
