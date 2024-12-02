@@ -7,15 +7,18 @@ import com.wsm.domain.client.entity.Client;
 import com.wsm.domain.client.entity.ClientInfoRepository;
 import com.wsm.domain.client.entity.ClientRepository;
 import com.wsm.domain.common.MyService;
+import com.wsm.domain.common.StatusEnum;
 import com.wsm.global.exception.BusinessException;
 import com.wsm.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @MyService
+@Slf4j
 public class ClientService {
 
     private final ClientRepository clientRepository;
@@ -95,5 +98,22 @@ public class ClientService {
      */
     public boolean checkDuplicateClientNo(String clientNo) {
         return clientRepository.findByClientNo(clientNo).isPresent();
+    }
+
+    /**
+     * 고객정보 저장
+     * @param clientSaveDtoList
+     * @return success count
+     */
+    public int saveList(List<ClientSaveDto> clientSaveDtoList) {
+        clientSaveDtoList.stream().forEach(clientSaveDto -> {
+            if(StatusEnum.CREATED.status().equals(clientSaveDto.getStatus())) {
+                this.save(clientSaveDto);
+            }
+            else if(StatusEnum.DELETED.status().equals(clientSaveDto.getStatus())) {
+                this.delete(clientSaveDto.getClientId());
+            }
+        });
+        return 1;
     }
 }

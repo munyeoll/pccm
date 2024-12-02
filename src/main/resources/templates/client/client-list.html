@@ -3,74 +3,35 @@
 <head>
     <link href="/node_modules/tabulator-tables/dist/css/tabulator_semanticui.min.css" rel="stylesheet">
     <title>고객목록</title>
-    <style>
-     .popup {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 300px;
-        background: white;
-        padding: 20px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        display: none;
-        z-index: 1000;
-    }
-    .popup-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: none;
-        z-index: 999;
-    }
-    .popup input {
-        width: 100%;
-        padding: 8px;
-        margin: 10px 0;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-    .popup button {
-        width: 100%;
-        padding: 10px;
-        border: none;
-        background: #007bff;
-        color: white;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    .popup button:hover {
-        background: #0056b3;
-    }
-    </style>
 </head>
 <body>
 <h1>고객목록</h1>
+<button id="searchBtn">조회</button>
+<button id="addRowBtn">추가</button>
+<button id="saveBtn">저장</button>
 <!-- 고객목록 그리드 -->
 <div id="client-grid" class="tabulator"></div>
-
-<div class="popup-overlay"></div>
-<div class="popup" id="popup">
-    <h2>Edit Item</h2>
-    <input type="text" id="editName" placeholder="Name">
-    <button id="saveButton">Save</button>
-</div>
 
 <script type="text/javascript" src="/node_modules/tabulator-tables/dist/js/tabulator.min.js"></script>
 <script type="text/javascript" src="/node_modules/luxon/build/global/luxon.min.js"></script>
 <script th:inline="javascript">
     let clientGrid;
-    let rowId = 0;
-    let createdRows  = [];
-    let modifiedRows = [];
-    let deletedRows = [];
+    let currentRowId = 0;
+    let createdRows  = []; // 신규
+    let modifiedRows = []; // 수정
+    let deletedRows  = []; // 삭제
+
+    const searchBtn = document.getElementById("searchBtn");
+    const addRowBtn = document.getElementById("addRowBtn");
+    const saveBtn = document.getElementById("saveBtn");
 
     document.addEventListener("DOMContentLoaded", () => {
         initGrid();
     });
+
+    searchBtn.addEventListener("click", () => getClientList());
+    addRowBtn.addEventListener("click", () => addRow());
+    saveBtn.addEventListener("click", () => saveData());
 
     /**
      * 그리드 초기화
@@ -83,9 +44,10 @@
             rowHeight: 35,
             layout: "fitData",
             columns: [
-                {title: "id", field: "id", width: 80, headerSort: false, visible: false},
+                {title: "gridRowId", field: "gridRowId", width: 50, visible: false},
+                {title: "clientId", field: "clientId", width: 50, visible: false},
                 {title: "상태", field: "status", width: 80, headerSort: false, headerHozAlign: "center", hozAlign: "center"},
-                {title: "삭제", field: "deleteChk",
+                {title: "삭제", field: "deleteChk", headerSort: false, headerHozAlign: "center", hozAlign: "center",
                     formatter: function(cell) {
                         var value = cell.getValue();
                         return value
@@ -99,28 +61,23 @@
                         }
                         cell.setValue(!value); // 체크박스 상태 토글
                     },
-                    cellEdited: (cell) => {
-                        let rowData = cell.getRow().getData();
-                        if(rowData.deleteChk) {
-                            cell.getRow().getCell("status").setValue("삭제");
-                            deletedRows.push(rowData);
-                        } else {
-                            cell.getRow().getCell("status").setValue("");
-                            deletedRows = deletedRows.filter(r => r.id !== rowData.id);
-                        }
-                    },
+                    cellEdited: (cell) => deleteChkEditedFunc(cell),
                 },
                 {title: "고객번호", field: "clientNo", width: 120, editor: "input", headerHozAlign: "center", hozAlign: "center",
                     cellEdited: (cell) => cellModifiedFunc(cell),
+                    editable: (cell) => editableFunc(cell),
                 },
                 {title: "성명", field: "clientName", width: 120, editor: "input", headerHozAlign: "center", hozAlign: "center",
                     cellEdited: (cell) => cellModifiedFunc(cell),
+                    editable: (cell) => editableFunc(cell),
                 },
                 {title: "연락처", field: "phoneNo", width: 130, editor: "input", headerHozAlign: "center", hozAlign: "center",
                     cellEdited: (cell) => cellModifiedFunc(cell),
+                    editable: (cell) => editableFunc(cell),
                 },
                 {title: "이메일", field: "emailAddr", width: 180, editor: "input", headerHozAlign: "center", hozAlign: "left",
                     cellEdited: (cell) => cellModifiedFunc(cell),
+                    editable: (cell) => editableFunc(cell),
                 },
                 {title: "시작일", field: "beginYmd", width: 140, formatter: "datetime", editor: "date", headerHozAlign: "center", hozAlign: "center",
                     formatterParams:{
@@ -135,6 +92,7 @@
                         verticalNavigation: "table",
                     },
                     cellEdited: (cell) => cellModifiedFunc(cell),
+                    editable: (cell) => editableFunc(cell),
                 },
                 {title: "종료일", field:"endYmd", width: 140, formatter: "datetime", editor: "date", headerHozAlign: "center", hozAlign: "center",
                     formatterParams:{
@@ -149,11 +107,7 @@
                         verticalNavigation: "table",
                     },
                     cellEdited: (cell) => cellModifiedFunc(cell),
-                },
-                {title: "삭제", formatter:"buttonCross", width:80, hozAlign:"center", headerSort: false, headerHozAlign: "center",
-                    cellClick:function(e, cell){
-                        deleteClient(cell.getRow().getData());
-                    }
+                    editable: (cell) => editableFunc(cell),
                 },
             ],
         });
@@ -161,7 +115,7 @@
         clientGrid.on("dataLoaded", function(data){
             if(data && data.length > 0) {
                 data.forEach(row => {
-                    row.id = rowId++;
+                    row.gridRowId = currentRowId++;
                     row.deleteChk = false;
                 });
             }
@@ -170,84 +124,46 @@
         getClientList();
     }
 
+    /**
+     * Cell 수정 후처리
+     */
     const cellModifiedFunc = (cell) => {
         let rowData = cell.getRow().getData();
-        let existing = modifiedRows.find(r => r.id === rowData.id);
+        let existing = modifiedRows.find(r => r.gridRowId === rowData.gridRowId);
+        cell.getRow().getCell("status").setValue("수정");
         if (!existing) {
-            cell.getRow().getCell("status").setValue("수정");
+            rowData.status = "M";
             modifiedRows.push(rowData);
         }
     }
 
-     const inputEditor = function(cell, onRendered, success, cancel, editorParams) {
-        var editor = document.createElement("input");
-        editor.setAttribute("type", "input");
-        editor.style.padding = "3px";
-        editor.style.width = "100%";
-        editor.style.boxSizing = "border-box";
-        editor.value = cell.getValue();
-
-        onRendered(function(){
-            editor.focus();
-            editor.style.css = "100%";
-        });
-
-        function onChange(){
-            if(editor.value !== cell.getValue()) {
+    /**
+     * Cell 삭제 후처리
+     */
+    const deleteChkEditedFunc = (cell) => {
+        let rowData = cell.getRow().getData();
+        if(rowData.deleteChk) {
+            cell.getRow().getCell("status").setValue("삭제");
+            rowData.status = "D";
+            deletedRows.push(rowData);
+        } else {
+            let modified = modifiedRows.find(r => r.gridRowId === rowData.gridRowId);
+            if(modified) {
                 cell.getRow().getCell("status").setValue("수정");
+            } else {
+                cell.getRow().getCell("status").setValue("");
             }
-            success(editor.value);
+            deletedRows = deletedRows.filter(r => r.gridRowId !== rowData.gridRowId);
         }
+    }
 
-        editor.addEventListener("blur", function(e) {
-            onChange();
-        });
-        editor.addEventListener("keydown", function(e) {
-            if(e.keyCode == 13) {
-                onChange();
-            }
-            if(e.keyCode == 27) {
-                cancel();
-            }
-        });
-
-        return editor;
-    };
-
-    const dateEditor = function(cell, onRendered, success, cancel, editorParams) {
-        var editor = document.createElement("input");
-        editor.setAttribute("type", "date");
-        editor.style.padding = "3px";
-        editor.style.width = "100%";
-        editor.style.boxSizing = "border-box";
-        editor.value = luxon.DateTime.fromFormat(cell.getValue(), "yyyyMMdd").toFormat("yyyy-MM-dd");
-
-        onRendered(function(){
-            editor.focus();
-            editor.style.css = "100%";
-        });
-
-        function onChange(){
-            if(editor.value !== cell.getValue()) {
-                cell.getRow().getCell("status").setValue("수정");
-            }
-            console.log(editor.value);
-            success(luxon.DateTime.fromFormat(editor.value, "yyyy-MM-dd").toFormat("yyyyMMdd"));
-        }
-
-        editor.addEventListener("blur", function(e) {
-            onChange();
-        });
-        editor.addEventListener("keydown", function(e) {
-            if(e.keyCode == 13) {
-                onChange();
-            }
-            if(e.keyCode == 27) {
-                cancel();
-            }
-        });
-
-        return editor;
+    /**
+     * Cell 수정 가능여부
+     */
+    const editableFunc = (cell) => {
+        let rowData = cell.getRow().getData();
+        if(deletedRows.length === 0) return true;
+        return !(deletedRows.find(r => r.gridRowId === rowData.gridRowId));
     }
 
     /**
@@ -258,6 +174,9 @@
             .then(response => response.json())
             .then(response => {
                 if( response.status === 200 ) {
+                    createdRows  = [];
+                    modifiedRows = [];
+                    deletedRows  = [];
                     clientGrid.replaceData(response.data);
                 }
             }
@@ -280,6 +199,49 @@
                 } else {
                     console.log(response);
                     alert("고객정보 삭제를 실패하였습니다.");
+                }
+            });
+        }
+    }
+
+    /**
+     * 행 추가
+     */
+    const addRow = () => {
+        clientGrid.addRow({
+            status:
+            gridRowId: currentRowId++,
+            beginYmd: '19000101',
+            endYmd: '29991231',
+        });
+    }
+
+    /**
+     * 데이터 저장
+     */
+    const saveData = () => {
+        const saveJson = [...createdRows, ...modifiedRows, ...deletedRows];
+        if(saveJson.length < 1) {
+            alert("저장할 데이터가 없습니다.");
+            return;
+        }
+
+        if( confirm("저장 하시겠습니까?") ) {
+            fetch("http://localhost:8080/api/client/save", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(saveJson),
+            })
+            .then(response => response.json())
+            .then(response => {
+                if( response.status === 200 ) {
+                    alert("저장이 완료되었습니다.");
+                    getClientList();
+                } else {
+                    console.log(response);
+                    alert("저장을 실패하였습니다.");
                 }
             });
         }

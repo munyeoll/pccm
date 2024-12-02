@@ -19,6 +19,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
 	implementation 'com.h2database:h2:2.1.214'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
 
 	compileOnly 'org.projectlombok:lombok'
 	compileOnly 'org.springframework.boot:spring-boot-devtools'

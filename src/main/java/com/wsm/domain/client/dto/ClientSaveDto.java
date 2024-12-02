@@ -48,6 +48,9 @@ public class ClientSaveDto {
 
     private String accessRouteCode;
 
+    private Long clientId;
+    private String status;
+
     public Client toClientEntity() {
         return Client.builder()
                 .clientNo(clientNo)

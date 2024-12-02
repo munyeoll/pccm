@@ -7,6 +7,7 @@ import com.wsm.domain.client.service.ClientService;
 import com.wsm.global.response.ResponseObject;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/client")
 @RestController
+@Slf4j
 public class ClientApiController {
 
     private final ClientService clientService;
@@ -95,4 +97,20 @@ public class ClientApiController {
         );
     }
 
+    /**
+     * 고객정보 저장
+     * @param clientSaveDtoList
+     * @return ResponseEntity
+     */
+    @PostMapping("/save")
+    public ResponseEntity<ResponseObject<Object>> saveClientList(@RequestBody @Valid List<ClientSaveDto> clientSaveDtoList) {
+        clientService.saveList(clientSaveDtoList);
+        return ResponseEntity.ok().body(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK.value())
+                        .message("저장이 완료되었습니다.")
+                        .data("")
+                        .build()
+        );
+    }
 }
