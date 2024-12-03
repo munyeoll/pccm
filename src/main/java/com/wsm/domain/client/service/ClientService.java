@@ -2,7 +2,6 @@ package com.wsm.domain.client.service;
 
 import com.wsm.domain.client.dto.ClientDto;
 import com.wsm.domain.client.dto.ClientSaveDto;
-import com.wsm.domain.client.dto.ClientUpdateDto;
 import com.wsm.domain.client.entity.Client;
 import com.wsm.domain.client.entity.ClientInfoRepository;
 import com.wsm.domain.client.entity.ClientRepository;
@@ -40,22 +39,21 @@ public class ClientService {
 
     /**
      * 고객정보 수정
-     * @param clientId
-     * @param clientUpdateDto
+     * @param clientSaveDto
      * @return Long(Client id)
      */
-    public void update(Long clientId, ClientUpdateDto clientUpdateDto) {
-        Client client = clientRepository.findById(clientId).orElseThrow(() ->
+    public void update(ClientSaveDto clientSaveDto) {
+        Client client = clientRepository.findById(clientSaveDto.getClientId()).orElseThrow(() ->
                 new BusinessException(ErrorCode.INVALID_PARAMETER));
         client.update(
-                clientUpdateDto.getClientName(),
-                clientUpdateDto.getPhoneNo(),
-                clientUpdateDto.getEmailAddr(),
-                clientUpdateDto.getBeginYmd(),
-                clientUpdateDto.getEndYmd()
+                clientSaveDto.getClientName(),
+                clientSaveDto.getPhoneNo(),
+                clientSaveDto.getEmailAddr(),
+                clientSaveDto.getBeginYmd(),
+                clientSaveDto.getEndYmd()
         );
         client.getClientInfo().update(
-                clientUpdateDto.getAccessRouteCode()
+                clientSaveDto.getAccessRouteCode()
         );
     }
 
@@ -109,6 +107,9 @@ public class ClientService {
         clientSaveDtoList.stream().forEach(clientSaveDto -> {
             if(StatusEnum.CREATED.status().equals(clientSaveDto.getStatus())) {
                 this.save(clientSaveDto);
+            }
+            else if(StatusEnum.MODIFIED.status().equals(clientSaveDto.getStatus())) {
+                this.update(clientSaveDto);
             }
             else if(StatusEnum.DELETED.status().equals(clientSaveDto.getStatus())) {
                 this.delete(clientSaveDto.getClientId());

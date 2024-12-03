@@ -2,7 +2,6 @@ package com.wsm.domain.client.controller;
 
 import com.wsm.domain.client.dto.ClientDto;
 import com.wsm.domain.client.dto.ClientSaveDto;
-import com.wsm.domain.client.dto.ClientUpdateDto;
 import com.wsm.domain.client.service.ClientService;
 import com.wsm.global.response.ResponseObject;
 import jakarta.validation.Valid;
@@ -40,9 +39,9 @@ public class ClientApiController {
     /*
      * 고객정보 수정 요청
      */
-    @PatchMapping("/{client-id}")
-    public ResponseEntity<ResponseObject<Object>> update(@PathVariable("client-id") Long clientId, @RequestBody @Valid ClientUpdateDto clientUpdateDto) {
-        clientService.update(clientId, clientUpdateDto);
+    @PatchMapping
+    public ResponseEntity<ResponseObject<Object>> update(@RequestBody @Valid ClientSaveDto clientSaveDto) {
+        clientService.update(clientSaveDto);
         return ResponseEntity.ok().body(
                 ResponseObject.builder()
                         .status(HttpStatus.OK.value())

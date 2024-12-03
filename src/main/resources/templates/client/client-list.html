@@ -17,9 +17,11 @@
 <script th:inline="javascript">
     let clientGrid;
     let currentRowId = 0;
-    let createdRows  = []; // 신규
-    let modifiedRows = []; // 수정
-    let deletedRows  = []; // 삭제
+    let editedRowIds = {
+        created:  {}, // 신규
+        modified: {}, // 수정
+        deleted:  {}, // 삭제
+    };
 
     const searchBtn = document.getElementById("searchBtn");
     const addRowBtn = document.getElementById("addRowBtn");
@@ -46,7 +48,8 @@
             columns: [
                 {title: "gridRowId", field: "gridRowId", width: 50, visible: false},
                 {title: "clientId", field: "clientId", width: 50, visible: false},
-                {title: "상태", field: "status", width: 80, headerSort: false, headerHozAlign: "center", hozAlign: "center"},
+                {title: "status", field: "rowStatus", width: 50, visible: false},
+                {title: "상태", field: "statusLabel", width: 80, headerSort: false, headerHozAlign: "center", hozAlign: "center"},
                 {title: "삭제", field: "deleteChk", headerSort: false, headerHozAlign: "center", hozAlign: "center",
                     formatter: function(cell) {
                         var value = cell.getValue();
@@ -129,11 +132,16 @@
      */
     const cellModifiedFunc = (cell) => {
         let rowData = cell.getRow().getData();
-        let existing = modifiedRows.find(r => r.gridRowId === rowData.gridRowId);
-        cell.getRow().getCell("status").setValue("수정");
+        let gridRowId = rowData.gridRowId;
+
+        // 추가 행은 수정으로 변경 하지 않음
+        if(editedRowIds.created[gridRowId]) return;
+
+        let existing = editedRowIds.modified[gridRowId];
+        cell.getRow().getCell("statusLabel").setValue("수정");
         if (!existing) {
             rowData.status = "M";
-            modifiedRows.push(rowData);
+            editedRowIds.modified[gridRowId] = rowData;
         }
     }
 
@@ -142,18 +150,31 @@
      */
     const deleteChkEditedFunc = (cell) => {
         let rowData = cell.getRow().getData();
+        let gridRowId = rowData.gridRowId;
+
         if(rowData.deleteChk) {
-            cell.getRow().getCell("status").setValue("삭제");
-            rowData.status = "D";
-            deletedRows.push(rowData);
-        } else {
-            let modified = modifiedRows.find(r => r.gridRowId === rowData.gridRowId);
-            if(modified) {
-                cell.getRow().getCell("status").setValue("수정");
-            } else {
-                cell.getRow().getCell("status").setValue("");
+            // 추가 행을 삭제 체크하면 제거한다.
+            if(editedRowIds.created[gridRowId]) {
+                delete editedRowIds.created[gridRowId];
+                cell.getRow().delete();
+                return;
             }
-            deletedRows = deletedRows.filter(r => r.gridRowId !== rowData.gridRowId);
+
+            // 삭제 체크 처리
+            cell.getRow().getCell("statusLabel").setValue("삭제");
+            rowData.status = "D";
+            editedRowIds.deleted[gridRowId] = rowData;
+        } else {
+            // 삭제 취소 시 그전에 수정 상태 였다면 수정 상태로 맹글어 줌
+            let modified = editedRowIds.modified[gridRowId];
+            if(modified) {
+                rowData.status = "M";
+                cell.getRow().getCell("statusLabel").setValue("수정");
+            } else {
+                rowData.status = "";
+                cell.getRow().getCell("statusLabel").setValue("");
+            }
+            delete editedRowIds.deleted[gridRowId];
         }
     }
 
@@ -162,8 +183,7 @@
      */
     const editableFunc = (cell) => {
         let rowData = cell.getRow().getData();
-        if(deletedRows.length === 0) return true;
-        return !(deletedRows.find(r => r.gridRowId === rowData.gridRowId));
+        return !(editedRowIds.deleted[rowData.gridRowId]);
     }
 
     /**
@@ -174,9 +194,9 @@
             .then(response => response.json())
             .then(response => {
                 if( response.status === 200 ) {
-                    createdRows  = [];
-                    modifiedRows = [];
-                    deletedRows  = [];
+                    editedRowIds.created  = {};
+                    editedRowIds.modified = {};
+                    editedRowIds.deleted  = {};
                     clientGrid.replaceData(response.data);
                 }
             }
@@ -184,43 +204,36 @@
     }
 
     /**
-     * 고객정보 삭제
-     */
-    const deleteClient = (client) => {
-        if( confirm("[" + client.clientName + "] 고객을 삭제하시겠습니까?") ) {
-            fetch("http://localhost:8080/api/client/"+client.clientId, {
-                method: "DELETE"
-            })
-            .then(response => response.json())
-            .then(response => {
-                if( response.status === 200 ) {
-                    alert("삭제가 완료되었습니다.");
-                    getClientList();
-                } else {
-                    console.log(response);
-                    alert("고객정보 삭제를 실패하였습니다.");
-                }
-            });
-        }
-    }
-
-    /**
      * 행 추가
      */
     const addRow = () => {
         clientGrid.addRow({
-            status:
+            status: 'C',
+            statusLabel: '추가',
             gridRowId: currentRowId++,
             beginYmd: '19000101',
             endYmd: '29991231',
-        });
+        }).then(
+            row => editedRowIds.created[row.getData().gridRowId] = row.getData()
+        );
     }
 
     /**
      * 데이터 저장
      */
     const saveData = () => {
-        const saveJson = [...createdRows, ...modifiedRows, ...deletedRows];
+        let rows = clientGrid.getRows();
+
+        let saveJson = [];
+        rows.forEach(row => {
+            const rowData = row.getData();
+            if(["C","M","D"].indexOf(rowData.status) !== -1) {
+                saveJson.push(rowData);
+            }
+        });
+
+        console.log(saveJson);
+
         if(saveJson.length < 1) {
             alert("저장할 데이터가 없습니다.");
             return;
