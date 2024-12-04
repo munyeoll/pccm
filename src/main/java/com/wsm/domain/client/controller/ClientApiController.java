@@ -102,7 +102,7 @@ public class ClientApiController {
      * @return ResponseEntity
      */
     @PostMapping("/save")
-    public ResponseEntity<ResponseObject<Object>> saveClientList(@RequestBody @Valid List<ClientSaveDto> clientSaveDtoList) {
+    public ResponseEntity<ResponseObject<Object>> saveClientList(@RequestBody List<ClientSaveDto> clientSaveDtoList) {
         clientService.saveList(clientSaveDtoList);
         return ResponseEntity.ok().body(
                 ResponseObject.builder()

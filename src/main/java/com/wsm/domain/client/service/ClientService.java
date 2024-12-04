@@ -50,7 +50,8 @@ public class ClientService {
                 clientSaveDto.getPhoneNo(),
                 clientSaveDto.getEmailAddr(),
                 clientSaveDto.getBeginYmd(),
-                clientSaveDto.getEndYmd()
+                clientSaveDto.getEndYmd(),
+                clientSaveDto.getNote()
         );
         client.getClientInfo().update(
                 clientSaveDto.getAccessRouteCode()

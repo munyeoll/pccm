@@ -15,7 +15,7 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     @Query("SELECT c FROM Client c WHERE c.clientNo = :clientNo")
     Optional<Client> findByClientNo(@Param("clientNo") String clientNo);
 
-    @Query("SELECT c FROM Client c LEFT JOIN FETCH c.clientInfo WHERE c.deleteYn = :deleteYn")
+    @Query("SELECT c FROM Client c LEFT JOIN FETCH c.clientInfo WHERE c.deleteYn = :deleteYn ORDER BY c.clientNo")
     List<Client> findByDeleteYn(@Param("deleteYn") String deleteYn);
 
 }

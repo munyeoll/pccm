@@ -46,6 +46,7 @@ public class ClientSaveDto {
     )
     private String endYmd;
 
+    private String note;
     private String accessRouteCode;
 
     private Long clientId;
@@ -59,6 +60,7 @@ public class ClientSaveDto {
                 .emailAddr(emailAddr)
                 .beginYmd(beginYmd)
                 .endYmd(endYmd)
+                .note(note)
                 .build();
     }
 

@@ -45,6 +45,9 @@ public class Client extends CommonEntity {
     @Column(length = 1)
     private String deleteYn;
 
+    @Column(length = 300)
+    private String note;
+
     private LocalDateTime deletedDate;
 
     @OneToOne(
@@ -54,22 +57,24 @@ public class Client extends CommonEntity {
     private ClientInfo clientInfo;
 
     @Builder
-    public Client(String clientNo, String clientName, String phoneNo, String emailAddr, String beginYmd, String endYmd) {
+    public Client(String clientNo, String clientName, String phoneNo, String emailAddr, String beginYmd, String endYmd, String note) {
         this.clientNo = clientNo;
         this.clientName = clientName;
         this.phoneNo = phoneNo;
         this.emailAddr = emailAddr;
         this.beginYmd = beginYmd;
         this.endYmd = endYmd;
+        this.note = note;
         this.deleteYn = "N";
     }
 
-    public void update(String clientName, String phoneNo, String emailAddr, String beginYmd, String endYmd) {
+    public void update(String clientName, String phoneNo, String emailAddr, String beginYmd, String endYmd, String note) {
         this.clientName = clientName;
         this.phoneNo = phoneNo;
         this.emailAddr = emailAddr;
         this.beginYmd = beginYmd;
         this.endYmd = endYmd;
+        this.note = note;
     }
 
     public void delete() {
