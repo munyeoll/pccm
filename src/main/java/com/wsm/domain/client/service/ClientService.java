@@ -43,7 +43,6 @@ public class ClientService {
      * @return Long(Client id)
      */
     public void update(ClientSaveDto clientSaveDto) {
-        log.info("###########@@@ clientTypeCode : " + clientSaveDto.getClientTypeCode());
         Client client = clientRepository.findById(clientSaveDto.getClientId()).orElseThrow(() ->
                 new BusinessException(ErrorCode.INVALID_PARAMETER));
         client.update(

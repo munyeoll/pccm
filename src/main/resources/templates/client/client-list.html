@@ -275,7 +275,6 @@
             .then(response => response.json())
             .then(response => {
                 if(response.status === 200) {
-                    console.log(response.data);
                     editedRowIds.created  = {};
                     editedRowIds.modified = {};
                     editedRowIds.deleted  = {};
