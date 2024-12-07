@@ -47,6 +47,8 @@ public class ClientSaveDto {
     private String endYmd;
 
     private String note;
+    private String clientTypeCode;
+
     private String accessRouteCode;
 
     private Long clientId;

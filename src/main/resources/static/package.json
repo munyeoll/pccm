@@ -9,6 +9,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "lodash": "^4.17.21",
     "luxon": "^3.5.0",
     "tabulator-tables": "^6.3.0"
   }

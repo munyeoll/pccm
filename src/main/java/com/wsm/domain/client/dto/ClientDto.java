@@ -17,6 +17,7 @@ public class ClientDto {
     private String endYmd;
     private String deleteYn;
     private String note;
+    private String clientTypeCode;
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
     private LocalDateTime deletedDate;
@@ -31,6 +32,7 @@ public class ClientDto {
         this.endYmd = entity.getEndYmd();
         this.deleteYn = entity.getDeleteYn();
         this.note = entity.getNote();
+        this.clientTypeCode = entity.getClientTypeCode();
         this.createdDate = entity.getCreatedDate();
         this.modifiedDate = entity.getModifiedDate();
         this.deletedDate = entity.getDeletedDate();
