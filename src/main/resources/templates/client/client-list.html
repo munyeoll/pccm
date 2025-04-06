@@ -35,6 +35,7 @@
 <script type="text/javascript" src="/node_modules/tabulator-tables/dist/js/tabulator.min.js"></script>
 <script type="text/javascript" src="/node_modules/luxon/build/global/luxon.min.js"></script>
 <script type="text/javascript" src="/node_modules/lodash/lodash.min.js"></script>
+<script type="text/javascript" src="/js/wsm.tabulator.js"></script>
 <script th:inline="javascript">
     let clientGrid;
     let currentRowId = 0;
@@ -179,7 +180,7 @@
             }
         });
 
-        clientGrid = new Tabulator("#client-grid", {
+        clientGrid = WsmTabulator.newTabulator("#client-grid", {
             height: '500px',
             layout: "fitDataStretch",
             columns: columns
