@@ -36,14 +36,10 @@
 <script type="text/javascript" src="/node_modules/luxon/build/global/luxon.min.js"></script>
 <script type="text/javascript" src="/node_modules/lodash/lodash.min.js"></script>
 <script type="text/javascript" src="/js/wsm.tabulator.js"></script>
+</body>
 <script th:inline="javascript">
     let clientGrid;
     let currentRowId = 0;
-    let editedRowIds = {
-        created:  {}, // 신규
-        modified: {}, // 수정
-        deleted:  {}, // 삭제
-    };
     const clientTypeCode = [
         {label: '일반', value: 'C01'},
         {label: 'EAP', value: 'C02'},
@@ -67,30 +63,9 @@
      * 그리드 초기화
      */
     const initGrid = () => {
-        const columns = [
-            {title: "gridRowId", field: "gridRowId", width: 50, visible: false},
-            {title: "clientId", field: "clientId", width: 50, visible: false},
-            {title: "status", field: "rowStatus", width: 50, visible: false},
-            {title: "상태", field: "statusLabel", width: 50, headerSort: false, headerHozAlign: "center", hozAlign: "center"},
-            {title: "삭제", field: "deleteChk", headerSort: false, headerHozAlign: "center", hozAlign: "center",
-                formatter: function(cell) {
-                    var value = cell.getValue();
-                    return value
-                        ? "<input type='checkbox' checked />"
-                        : "<input type='checkbox' />";
-                },
-                cellClick: function(e, cell) {
-                    var value = cell.getValue();
-                    if(typeof value === "undefined") {
-                        value = false;
-                    }
-                    cell.setValue(!value); // 체크박스 상태 토글
-                },
-                cellEdited: (cell) => deleteChkEditedFunc(cell),
-            },
-            {title: "고객번호", field: "clientNo", width: 120, editor: "input", headerHozAlign: "center", hozAlign: "center",
-                cellEdited: (cell) => cellModifiedFunc(cell),
-                editable: (cell) => editableFunc(cell),
+        const columns = WsmTabulator.column
+            .add({title: "clientId", field: "clientId", width: 50, visible: false})
+            .add({title: "고객번호", field: "clientNo", width: 120, editor: "input", headerHozAlign: "center", hozAlign: "center",
                 validator: [{
                     type: (cell, value, parameters) => validatorFunc(cell, value, parameters),
                     parameters: {
@@ -98,14 +73,9 @@
                         errorMsg: '고객번호는 영문과 숫자만 입력 가능합니다.',
                     }
                 }],
-            },
-            {title: "성명", field: "clientName", width: 120, editor: "input", headerHozAlign: "center", hozAlign: "center",
-                cellEdited: (cell) => cellModifiedFunc(cell),
-                editable: (cell) => editableFunc(cell),
-            },
-            {title: "고객구분", field: "clientTypeCode", width: 100, editor: "list", headerHozAlign: "center", hozAlign: "left",
-                cellEdited: (cell) => cellModifiedFunc(cell),
-                editable: (cell) => editableFunc(cell),
+            })
+            .add({title: "성명", field: "clientName", width: 120, editor: "input", headerHozAlign: "center", hozAlign: "center",})
+            .add({title: "고객구분", field: "clientTypeCode", width: 100, editor: "list", headerHozAlign: "center", hozAlign: "left",
                 editorParams: {
                     values: clientTypeCode,
                 },
@@ -114,21 +84,17 @@
                     const match = clientTypeCode.find(option => option.value === value);
                     return match ? match.label : value;
                 },
-            },
-            {title: "휴대폰", field: "phoneNo", width: 130, editor: "input", headerHozAlign: "center", hozAlign: "center",
-                cellEdited: (cell) => cellModifiedFunc(cell),
-                editable: (cell) => editableFunc(cell),
+            })
+            .add({title: "휴대폰", field: "phoneNo", width: 130, editor: "input", headerHozAlign: "center", hozAlign: "center",
                 validator: [{
                     type: (cell, value, parameters) => validatorFunc(cell, value, parameters),
                     parameters: {
                         format: 'phone',
-                        errorMsg: '올바른 전화번호 형식 (예: 010-1234-5678)이 아닙니다.',
+                        errorMsg: '올바른 전화번호 형식(예: 010-1234-5678)이 아닙니다.',
                     }
                 }],
-            },
-            {title: "이메일", field: "emailAddr", width: 180, editor: "input", headerHozAlign: "center", hozAlign: "left",
-                cellEdited: (cell) => cellModifiedFunc(cell),
-                editable: (cell) => editableFunc(cell),
+            })
+            .add({title: "이메일", field: "emailAddr", width: 180, editor: "input", headerHozAlign: "center", hozAlign: "left",
                 validator: [{
                     type: (cell, value, parameters) => validatorFunc(cell, value, parameters),
                     parameters: {
@@ -136,8 +102,8 @@
                         errorMsg: '올바른 이메일 형식이 아닙니다.',
                     }
                 }],
-            },
-            {title: "시작일", field: "beginYmd", width: 140, formatter: "datetime", editor: "date", headerHozAlign: "center", hozAlign: "center",
+            })
+            .add({title: "시작일", field: "beginYmd", width: 140, formatter: "datetime", editor: "date", headerHozAlign: "center", hozAlign: "center",
                 formatterParams:{
                     inputFormat: "yyyyMMdd",
                     outputFormat: "yyyy-MM-dd",
@@ -149,10 +115,8 @@
                     format: "yyyyMMdd",
                     verticalNavigation: "table",
                 },
-                cellEdited: (cell) => cellModifiedFunc(cell),
-                editable: (cell) => editableFunc(cell),
-            },
-            {title: "종료일", field:"endYmd", width: 140, formatter: "datetime", editor: "date", headerHozAlign: "center", hozAlign: "center",
+            })
+            .add({title: "종료일", field:"endYmd", width: 140, formatter: "datetime", editor: "date", headerHozAlign: "center", hozAlign: "center",
                 formatterParams:{
                     inputFormat: "yyyyMMdd",
                     outputFormat: "yyyy-MM-dd",
@@ -164,108 +128,23 @@
                     format: "yyyyMMdd",
                     verticalNavigation: "table",
                 },
-                cellEdited: (cell) => cellModifiedFunc(cell),
-                editable: (cell) => editableFunc(cell),
-            },
-            {title: "비고", field: "note", width: 200, editor: "input", headerHozAlign: "center", hozAlign: "left",
-                cellEdited: (cell) => cellModifiedFunc(cell),
-                editable: (cell) => editableFunc(cell),
-            },
-        ];
-
-        // 필수 표기
-        columns.forEach((col) => {
-            if (col.validator === 'required') {
-                col.title += " <span style='color: red;'>*</span>";
-            }
-        });
+            })
+            .add({title: "비고", field: "note", width: 200, editor: "input", headerHozAlign: "center", hozAlign: "left",})
+            .build()
+        ;
 
         clientGrid = WsmTabulator.newTabulator("#client-grid", {
+            useStatus: true,
+            useDelete: true,
             height: '500px',
             layout: "fitDataStretch",
-            columns: columns
-        });
-
-        clientGrid.on("dataLoaded", function(data){
-            if(data && data.length > 0) {
-                data.forEach(row => {
-                    row.gridRowId = currentRowId++;
-                    row.deleteChk = false;
-                });
-            }
-        });
-
-        // 유효성검사
-        clientGrid.on("validationFailed", (cell, value, validators) => {
-            alert(validators[0].parameters.errorMsg);
+            columns: columns,
+            requiredFields: [
+                "clientNo", "clientName", "clientTypeCode", "beginYmd", "endYmd"
+            ],
         });
 
         getClientList();
-    }
-
-    /**
-     * Cell 수정 후처리
-     */
-    const cellModifiedFunc = (cell) => {
-        let rowData = cell.getRow().getData();
-        let gridRowId = rowData.gridRowId;
-
-        // 추가 행은 수정으로 변경 하지 않음
-        if(!_.isEmpty(editedRowIds.created[gridRowId])) return;
-
-        let existing = editedRowIds.modified[gridRowId];
-        cell.getRow().getCell("statusLabel").setValue("수정");
-        if (!existing) {
-            rowData.status = "M";
-            editedRowIds.modified[gridRowId] = rowData;
-        }
-    }
-
-    /**
-     * Cell 삭제 후처리
-     */
-    const deleteChkEditedFunc = (cell) => {
-        let rowData = cell.getRow().getData();
-        let gridRowId = rowData.gridRowId;
-
-        if(rowData.deleteChk) {
-            // 추가 행을 삭제 체크하면 제거한다.
-            if(!_.isEmpty(editedRowIds.created[gridRowId])) {
-                delete editedRowIds.created[gridRowId];
-                cell.getRow().delete();
-                return;
-            }
-
-            // 삭제 체크 처리
-            cell.getRow().getCell("statusLabel").setValue("삭제");
-            rowData.status = "D";
-            editedRowIds.deleted[gridRowId] = rowData;
-        } else {
-            // 삭제 취소 시 그전에 수정 상태 였다면 수정 상태로 맹글어 줌
-            if(!_.isEmpty(editedRowIds.modified[gridRowId])) {
-                rowData.status = "M";
-                cell.getRow().getCell("statusLabel").setValue("수정");
-            } else {
-                rowData.status = "";
-                cell.getRow().getCell("statusLabel").setValue("");
-            }
-            delete editedRowIds.deleted[gridRowId];
-        }
-    }
-
-    /**
-     * Cell 수정 가능여부
-     */
-    const editableFunc = (cell) => {
-        let rowData = cell.getRow().getData();
-
-        // 고객번호는 수정 불가
-        if(cell.getColumn().getField() === "clientNo") {
-            if(rowData.status === "C") return true;
-            else return false;
-        }
-
-        return !(editedRowIds.deleted[rowData.gridRowId]);
     }
 
     /**
@@ -276,9 +155,6 @@
             .then(response => response.json())
             .then(response => {
                 if(response.status === 200) {
-                    editedRowIds.created  = {};
-                    editedRowIds.modified = {};
-                    editedRowIds.deleted  = {};
                     clientGrid.replaceData(response.data);
                 }
             }
@@ -292,12 +168,9 @@
         clientGrid.addRow({
             status: 'C',
             statusLabel: '추가',
-            gridRowId: currentRowId++,
             beginYmd: '19000101',
             endYmd: '29991231',
-        }).then(
-            row => editedRowIds.created[row.getData().gridRowId] = row.getData()
-        );
+        })
     }
 
     /**
@@ -306,14 +179,9 @@
     const saveData = () => {
         let rows = clientGrid.getRows();
 
-        let saveJson = [];
-        rows.forEach(row => {
-            const rowData = row.getData();
-            if(["C","M","D"].indexOf(rowData.status) !== -1) {
-                saveJson.push(rowData);
-            }
-        });
+        // 필수값 확인
 
+        let saveJson = clientGrid.getModifiedData();
         if(saveJson.length < 1) {
             alert("저장할 데이터가 없습니다.");
             return;
@@ -333,7 +201,11 @@
                     alert("저장이 완료되었습니다.");
                     getClientList();
                 } else {
-                    alert("저장을 실패하였습니다.");
+                    let errorMsg = response.message;
+                    if(_.isEmpty(errorMsg)) {
+                        errorMsg = "저장에 실패하였습니다.";
+                    }
+                    alert(errorMsg);
                 }
             });
         }
@@ -387,5 +259,4 @@
         return regex.test(value);
     }
 </script>
-</body>
 </html>
