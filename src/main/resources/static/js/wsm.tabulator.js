@@ -1,6 +1,54 @@
 var WsmTabulator = (function() {
     let tabulator = {};
 
+    /**
+     * 이메일 유효성 검사
+     */
+    function isValidEmail(value) {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // 기본 이메일 패턴
+        return regex.test(value);
+    }
+
+    /**
+     * 전화번호 유효성 검사 (한국 기준: 숫자와 '-' 포함)
+     */
+    function isValidPhoneNumber(value) {
+        const regex = /^\d{2,3}-\d{3,4}-\d{4}$/; // 형식: 010-1234-5678 또는 02-123-4567
+        return regex.test(value);
+    }
+
+    /**
+     * 영문&숫자 유효성 검사 (영문과 숫자만 사용 가능)
+     */
+    function isValidOnlyEngAndNumber(value) {
+        const regex = /^[a-zA-Z0-9]+$/;
+        return regex.test(value);
+    }
+
+    /**
+     * Cell 유효성 검사
+     */
+    function validatorFunc(cell, value, parameters) {
+        if(_.isEmpty(value)) {
+            return true;
+        }
+
+        let format = parameters.format;
+        if(!_.isEmpty(format)) {
+            if(format === 'email') {
+                return isValidEmail(value);
+            }
+            else if(format === 'phone') {
+                return isValidPhoneNumber(value);
+            }
+            else if(format === 'engNum') {
+                return isValidOnlyEngAndNumber(value);
+            }
+        }
+
+        return true;
+    }
+
     tabulator.column = {
         columns: [],
         build: function() {
@@ -8,10 +56,103 @@ var WsmTabulator = (function() {
             this.columns = [];
             return returnValue;
         },
-        add: function(columnObj) {
-            this.columns.push(columnObj);
+        add: function(option) {
+            this.columns.push(option);
             return this;
         },
+        addText: function(option) {
+            let columnInfo = {
+                title: option.title,
+                field: option.field,
+                width: option.width,
+                visible: _.isNil(option.visible) ? true : option.visible,
+                hozAlign: _.isEmpty(option.align) ? 'center' : option.align, // 데이터 정렬
+                headerHozAlign: 'center', // 헤더 정렬
+                editor: 'input',
+            };
+
+            // 영문,숫자
+            if(option.dataType === "engNum") {
+                columnInfo.validator = [{
+                    type: (cell, value, parameters) => validatorFunc(cell, value, parameters),
+                    parameters: {
+                        format: 'engNum',
+                        errorMsg: '[' + option.title + ']는 영문 혹은 숫자만 입력 가능합니다.',
+                    }
+                }];
+            }
+            // 휴대전화
+            if(option.dataType === "phone") {
+                columnInfo.validator = [{
+                    type: (cell, value, parameters) => validatorFunc(cell, value, parameters),
+                    parameters: {
+                        format: 'phone',
+                        errorMsg: '올바른 전화번호 형식(예: 010-1234-5678)이 아닙니다.',
+                    }
+                }];
+            }
+            // 이메일
+            if(option.dataType === "email") {
+                columnInfo.validator = [{
+                    type: (cell, value, parameters) => validatorFunc(cell, value, parameters),
+                    parameters: {
+                        format: 'email',
+                        errorMsg: '올바른 이메일 형식이 아닙니다.',
+                    }
+                }];
+            }
+
+            this.columns.push(columnInfo);
+            return this;
+        },
+        addList: function(option) {
+            let columnInfo = {
+                title: option.title,
+                field: option.field,
+                width: option.width,
+                visible: _.isNil(option.visible) ? true : option.visible,
+                hozAlign: _.isEmpty(option.align) ? 'center' : option.align, // 데이터 정렬
+                headerHozAlign: 'center', // 헤더 정렬
+                editor: 'list',
+                editorParams: {
+                    values: _.isEmpty(option.listItem) ? [] : option.listItem
+                },
+                formatter: (cell) => {
+                    const value = cell.getValue();
+                    const match = clientTypeCode.find(option => option.value === value);
+                    return match ? match.label : value;
+                },
+            };
+
+            this.columns.push(columnInfo);
+            return this;
+        },
+        addDate: function(option) {
+            let columnInfo = {
+                title: option.title,
+                field: option.field,
+                width: option.width,
+                visible: _.isNil(option.visible) ? true : option.visible,
+                hozAlign: _.isEmpty(option.align) ? 'center' : option.align, // 데이터 정렬
+                headerHozAlign: 'center', // 헤더 정렬
+                editor: 'date',
+                formatter: "datetime",
+                formatterParams:{
+                    inputFormat: "yyyyMMdd",
+                    outputFormat: "yyyy-MM-dd",
+                    invalidPlaceholder: "(invalid date)",
+                },
+                editorParams:{
+                    min:"19000101",
+                    max:"29991231",
+                    format: "yyyyMMdd",
+                    verticalNavigation: "table",
+                },
+            };
+
+            this.columns.push(columnInfo);
+            return this;
+        }
     };
 
     tabulator.newTabulator = function(element, option, modules) {
