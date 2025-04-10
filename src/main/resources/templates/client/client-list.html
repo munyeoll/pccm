@@ -123,6 +123,9 @@
         let rows = clientGrid.getRows();
 
         // 필수값 확인
+        if(!clientGrid.validateRequiredFields()) {
+            return;
+        }
 
         let saveJson = clientGrid.getModifiedData();
         if(saveJson.length < 1) {

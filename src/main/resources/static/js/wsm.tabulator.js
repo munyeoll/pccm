@@ -49,70 +49,57 @@ var WsmTabulator = (function() {
         return true;
     }
 
+    function getValidator(dataType, title) {
+        const messages = {
+            engNum: `[${title}]는 영문 혹은 숫자만 입력 가능합니다.`,
+            phone: '올바른 전화번호 형식(예: 010-1234-5678)이 아닙니다.',
+            email: '올바른 이메일 형식이 아닙니다.',
+        };
+
+        return [{
+            type: (cell, value, parameters) => validatorFunc(cell, value, parameters),
+            parameters: {
+                format: dataType,
+                errorMsg: messages[dataType],
+            }
+        }];
+    }
+
     tabulator.column = {
         columns: [],
+        requiredFields: [],
         build: function() {
             let returnValue = this.columns;
             this.columns = [];
             return returnValue;
         },
-        add: function(option) {
-            this.columns.push(option);
-            return this;
-        },
-        addText: function(option) {
-            let columnInfo = {
+        baseColumn: function(option) {
+            return {
                 title: option.title,
                 field: option.field,
                 width: option.width,
                 visible: _.isNil(option.visible) ? true : option.visible,
-                hozAlign: _.isEmpty(option.align) ? 'center' : option.align, // 데이터 정렬
-                headerHozAlign: 'center', // 헤더 정렬
-                editor: 'input',
+                hozAlign: _.isEmpty(option.align) ? 'center' : option.align,
+                headerHozAlign: 'center',
             };
+        },
+        addText: function(option) {
+            let columnInfo = this.baseColumn(option);
+            Object.assign(columnInfo, {
+                editor: 'input',
+            });
 
-            // 영문,숫자
-            if(option.dataType === "engNum") {
-                columnInfo.validator = [{
-                    type: (cell, value, parameters) => validatorFunc(cell, value, parameters),
-                    parameters: {
-                        format: 'engNum',
-                        errorMsg: '[' + option.title + ']는 영문 혹은 숫자만 입력 가능합니다.',
-                    }
-                }];
-            }
-            // 휴대전화
-            if(option.dataType === "phone") {
-                columnInfo.validator = [{
-                    type: (cell, value, parameters) => validatorFunc(cell, value, parameters),
-                    parameters: {
-                        format: 'phone',
-                        errorMsg: '올바른 전화번호 형식(예: 010-1234-5678)이 아닙니다.',
-                    }
-                }];
-            }
-            // 이메일
-            if(option.dataType === "email") {
-                columnInfo.validator = [{
-                    type: (cell, value, parameters) => validatorFunc(cell, value, parameters),
-                    parameters: {
-                        format: 'email',
-                        errorMsg: '올바른 이메일 형식이 아닙니다.',
-                    }
-                }];
+            // 유효성검사
+            if(["email", "phone", "engNum"].includes(option.dataType)) {
+                columnInfo.validator = getValidator(option.dataType, option.title);
             }
 
             this.columns.push(columnInfo);
             return this;
         },
         addList: function(option) {
-            let columnInfo = {
-                title: option.title,
-                field: option.field,
-                width: option.width,
-                visible: _.isNil(option.visible) ? true : option.visible,
-                hozAlign: _.isEmpty(option.align) ? 'center' : option.align, // 데이터 정렬
-                headerHozAlign: 'center', // 헤더 정렬
+            let columnInfo = this.baseColumn(option);
+            Object.assign(columnInfo, {
                 editor: 'list',
                 editorParams: {
                     values: _.isEmpty(option.listItem) ? [] : option.listItem
@@ -122,19 +109,14 @@ var WsmTabulator = (function() {
                     const match = clientTypeCode.find(option => option.value === value);
                     return match ? match.label : value;
                 },
-            };
+            });
 
             this.columns.push(columnInfo);
             return this;
         },
         addDate: function(option) {
-            let columnInfo = {
-                title: option.title,
-                field: option.field,
-                width: option.width,
-                visible: _.isNil(option.visible) ? true : option.visible,
-                hozAlign: _.isEmpty(option.align) ? 'center' : option.align, // 데이터 정렬
-                headerHozAlign: 'center', // 헤더 정렬
+            let columnInfo = this.baseColumn(option);
+            Object.assign(columnInfo, {
                 editor: 'date',
                 formatter: "datetime",
                 formatterParams:{
@@ -148,7 +130,7 @@ var WsmTabulator = (function() {
                     format: "yyyyMMdd",
                     verticalNavigation: "table",
                 },
-            };
+            });
 
             this.columns.push(columnInfo);
             return this;
@@ -163,11 +145,20 @@ var WsmTabulator = (function() {
                     deleted:  {}, // 삭제
                 },
                 currentRowId: 0,
+                requiredFields: [],
+                columns: [],
             };
 
         option = option || {};
         let columns = option.columns || [];
         let requiredFields = option.requiredFields || [];
+
+        tabulatorObj.requiredFields = requiredFields;
+
+        tabulatorObj.columns = _.cloneDeep(columns);
+        tabulatorObj.columns.forEach((col) => {
+            col.label = col.title;
+        });
 
         /*
          * 필수 항목 표기
@@ -332,6 +323,31 @@ var WsmTabulator = (function() {
                 }
             });
             return data;
+        }
+
+        // 필수항목 확인
+        tabulatorObj.validateRequiredFields = () => {
+            if(_.isEmpty(tabulatorObj.requiredFields)) return true;
+
+            let rows = tabulatorObj.tabulator.getRows();
+            let valid = true;
+            rows.forEach(row => {
+                const rowData = row.getData();
+                if(["C","M","D"].indexOf(rowData.status) !== -1) {
+                    tabulatorObj.requiredFields.forEach(reqCol => {
+                        if(_.isNil(rowData[reqCol]) || _.isEmpty(rowData[reqCol])) {
+                            let label = _.find(tabulatorObj.columns, {field: reqCol}).label;
+                            let msg = "["+label+"]는 필수값 입니다.";
+                            alert(msg);
+                            valid = false;
+                            return;
+                        }
+                    });
+                    if(!valid) return;
+                }
+            });
+
+            return valid;
         }
 
         return tabulatorObj;
