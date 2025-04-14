@@ -1,0 +1,16 @@
+h1 {
+    text-align: center;
+}
+.buttons {
+    margin-bottom: 15px;
+    text-align: right;
+}
+.buttons button {
+    padding: 3px 15px;
+}
+.tabulator {
+    border: 1px solid #999;
+}
+.tabulator-row .tabulator-cell:last-of-type {
+    border-right: 1px solid #ddd;
+}

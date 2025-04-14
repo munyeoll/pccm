@@ -2,25 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <link href="/node_modules/tabulator-tables/dist/css/tabulator_simple.min.css" rel="stylesheet">
+    <link href="/css/tabulator-wsm.css" rel="stylesheet">
     <title>고객목록</title>
-    <style>
-        h1 {
-            text-align: center;
-        }
-        .buttons {
-            margin-bottom: 15px;
-            text-align: right;
-        }
-        .buttons button {
-            padding: 3px 15px;
-        }
-        .tabulator {
-            border: 1px solid #999;
-        }
-        .tabulator-row .tabulator-cell:last-of-type {
-            border-right: 1px solid #ddd;
-        }
-    </style>
 </head>
 <body>
 <h1>고객목록</h1>
@@ -36,7 +19,6 @@
 <script type="text/javascript" src="/node_modules/luxon/build/global/luxon.min.js"></script>
 <script type="text/javascript" src="/node_modules/lodash/lodash.min.js"></script>
 <script type="text/javascript" src="/js/wsm.tabulator.js"></script>
-</body>
 <script th:inline="javascript">
     let clientGrid;
     const clientTypeCode = [
@@ -156,4 +138,5 @@
         }
     }
 </script>
+</body>
 </html>
