@@ -6,14 +6,14 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SequenceGenerator(
         name = "CLIENT_SEQ_GENERATOR",
         sequenceName = "CLIENT_SEQ",
         initialValue = 1,
         allocationSize = 1
 )
-@Entity
 @Data
 public class Client extends CommonEntity {
 
