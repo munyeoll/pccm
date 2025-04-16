@@ -1,5 +1,6 @@
 package com.wsm.domain.client.entity;
 
+import com.wsm.domain.common.CommonEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -15,7 +16,7 @@ import lombok.NoArgsConstructor;
 )
 @Entity
 @Data
-public class ClientInfo {
+public class ClientInfo extends CommonEntity {
 
     @Id
     @GeneratedValue(

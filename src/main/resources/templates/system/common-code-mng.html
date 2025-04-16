@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link href="/node_modules/tabulator-tables/dist/css/tabulator_simple.min.css" rel="stylesheet">
+    <link href="/css/tabulator-wsm.css" rel="stylesheet">
+    <title>공통코드관리</title>
+</head>
+<body>
+<h1>공통코드목록</h1>
+<div class="buttons">
+    <button id="searchBtn">조회</button>
+    <button id="addRowBtn">추가</button>
+    <button id="saveBtn">저장</button>
+</div>
+<!-- 고객목록 그리드 -->
+<div id="common-code-grid" class="tabulator"></div>
+
+<script type="text/javascript" src="/node_modules/tabulator-tables/dist/js/tabulator.min.js"></script>
+<script type="text/javascript" src="/node_modules/luxon/build/global/luxon.min.js"></script>
+<script type="text/javascript" src="/node_modules/lodash/lodash.min.js"></script>
+<script type="text/javascript" src="/js/wsm.tabulator.js"></script>
+<script th:inline="javascript">
+    let commonCodeGrid;
+    const clientTypeCode = [
+        {label: '일반', value: 'C01'},
+        {label: 'EAP', value: 'C02'},
+        {label: '기관/학교', value: 'C03'},
+        {label: '임시고객', value: 'C04'},
+    ];
+
+    const searchBtn = document.getElementById("searchBtn");
+    const addRowBtn = document.getElementById("addRowBtn");
+    const saveBtn = document.getElementById("saveBtn");
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initGrid();
+    });
+
+    searchBtn.addEventListener("click", () => getCommonCodeList());
+    addRowBtn.addEventListener("click", () => addRow());
+    saveBtn.addEventListener("click", () => saveData());
+
+    /**
+     * 그리드 초기화
+     */
+    const initGrid = () => {
+        const columns = WsmTabulator.column
+            .addText({title: "clientId", field: "clientId", width: 50, visible: false})
+            .addText({title: "고객번호", field: "clientNo", width: 120, align: 'center', dataType: 'engNum'})
+            .addText({title: "성명", field: "clientName", width: 120, align: 'center'})
+            .addList({title: "고객구분", field: "clientTypeCode", width: 100, align: 'left', listItem: clientTypeCode})
+            .addText({title: "휴대폰", field: "phoneNo", width: 130, align: 'center', dataType: 'phone'})
+            .addText({title: "이메일", field: "emailAddr", width: 180, align: 'left', dataType: 'email'})
+            .addDate({title: "시작일", field: "beginYmd", width: 140, align: 'center'})
+            .addDate({title: "종료일", field: "endYmd", width: 140, align: 'center'})
+            .addText({title: "비고", field: "note", width: 200, align: 'left'})
+            .build()
+        ;
+
+        commonCodeGrid = WsmTabulator.newTabulator("#common-code-grid", {
+            useStatus: true,
+            useDelete: true,
+            height: '500px',
+            layout: "fitDataStretch",
+            columns: columns,
+            requiredFields: [
+                "clientNo", "clientName", "clientTypeCode", "beginYmd", "endYmd"
+            ],
+        });
+
+        getCommonCodeList();
+    }
+
+    /**
+     * 고객목록 조회
+     */
+    const getCommonCodeList = () => {
+        fetch("http://localhost:8080/api/client/list")
+            .then(response => response.json())
+            .then(response => {
+                if(response.status === 200) {
+                    commonCodeGrid.replaceData(response.data);
+                }
+            }
+        );
+    }
+
+    /**
+     * 행 추가
+     */
+    const addRow = () => {
+        commonCodeGrid.addRow({
+            status: 'C',
+            statusLabel: '추가',
+            beginYmd: '19000101',
+            endYmd: '29991231',
+        })
+    }
+
+    /**
+     * 데이터 저장
+     */
+    const saveData = () => {
+        let rows = commonCodeGrid.getRows();
+
+        // 필수값 확인
+        if(!commonCodeGrid.validateRequiredFields()) {
+            return;
+        }
+
+        let saveJson = commonCodeGrid.getModifiedData();
+        if(saveJson.length < 1) {
+            alert("저장할 데이터가 없습니다.");
+            return;
+        }
+
+        if( confirm("저장 하시겠습니까?") ) {
+            fetch("http://localhost:8080/api/client/save", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(saveJson),
+            })
+            .then(response => response.json())
+            .then(response => {
+                if( response.status === 200 ) {
+                    alert("저장이 완료되었습니다.");
+                    getCommonCodeList();
+                } else {
+                    let errorMsg = response.message;
+                    if(_.isEmpty(errorMsg)) {
+                        errorMsg = "저장에 실패하였습니다.";
+                    }
+                    alert(errorMsg);
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>

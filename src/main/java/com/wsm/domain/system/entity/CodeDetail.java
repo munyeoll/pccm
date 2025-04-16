@@ -1,5 +1,6 @@
 package com.wsm.domain.system.entity;
 
+import com.wsm.domain.common.CommonEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +15,7 @@ import lombok.*;
 )
 @Data
 @Builder
-public class CodeDetail {
+public class CodeDetail extends CommonEntity {
 
     @Id
     @GeneratedValue(
@@ -28,10 +29,10 @@ public class CodeDetail {
     private CodeMaster codeMaster;
 
     @Column(nullable = false, length = 50)
-    private String value;
+    private String codeValue;
 
     @Column(nullable = false, length = 100)
-    private String label;
+    private String codeLabel;
 
     @Column(nullable = false, length = 3)
     private Integer sortOrder;

@@ -16,6 +16,7 @@ public abstract class CommonEntity {
     @Column(updatable = false)
     private LocalDateTime createdDate;
 
+    @Column
     private LocalDateTime modifiedDate;
 
     @PrePersist

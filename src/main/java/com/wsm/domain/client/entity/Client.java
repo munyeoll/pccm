@@ -51,6 +51,7 @@ public class Client extends CommonEntity {
     @Column(length = 20)
     private String clientTypeCode;
 
+    @Column
     private LocalDateTime deletedDate;
 
     @OneToOne(
