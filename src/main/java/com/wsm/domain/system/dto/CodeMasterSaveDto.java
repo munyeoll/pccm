@@ -18,6 +18,7 @@ public class CodeMasterSaveDto {
     private String codeName;
 
     private String note;
+    private String status;
 
     public CodeMaster toCodeMasterEntity() {
         return CodeMaster.builder()

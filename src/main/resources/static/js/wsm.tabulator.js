@@ -231,7 +231,12 @@ var WsmTabulator = (function () {
          * 외부 공개 메서드
          */
         tabulatorObj.addRow = (addObj) => {
-            addObj.gridRowId = tabulatorObj.currentRowId++;
+            addObj = {
+                ...addObj,
+                gridRowId: tabulatorObj.currentRowId++,
+                status: "C",
+                statusLabel: '추가'
+            };
             tabulatorObj.tabulator.addRow(addObj).then(row => {
                 tabulatorObj.editedRowIds.created[addObj.gridRowId] = row.getData();
             });
