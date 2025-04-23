@@ -3,10 +3,10 @@ package com.wsm.domain.system.entity;
 import com.wsm.domain.common.CommonEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.util.StringUtils;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @SequenceGenerator(
         name = "CODE_DETAIL_GENERATOR",
         sequenceName = "CODE_DETAIL_SEQ",
@@ -14,7 +14,6 @@ import lombok.*;
         allocationSize = 1
 )
 @Data
-@Builder
 public class CodeDetail extends CommonEntity {
 
     @Id
@@ -39,4 +38,26 @@ public class CodeDetail extends CommonEntity {
 
     @Column(length = 1)
     private String useYn;
+
+    @Builder
+    public CodeDetail(
+        Long detailId, CodeMaster codeMaster, String codeValue, String codeLabel,
+        Integer sortOrder, String useYn
+    ) {
+        this.detailId = detailId;
+        this.codeMaster = codeMaster;
+        this.codeValue = codeValue;
+        this.codeLabel = codeLabel;
+        this.sortOrder = sortOrder;
+        this.useYn = StringUtils.hasLength(useYn) ? useYn : "Y";
+    }
+
+    public void update(
+        String codeValue, String codeLabel, Integer sortOrder, String useYn
+    ) {
+        this.codeValue = codeValue;
+        this.codeLabel = codeLabel;
+        this.sortOrder = sortOrder;
+        this.useYn = useYn;
+    }
 }
